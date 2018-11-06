@@ -1,4 +1,4 @@
-// Shuichi Aizawa 2018
+// Shuichi Aizawa 2018 github.com/shu1
 
 var express = require('express');
 var bodyParser = require('body-parser');
