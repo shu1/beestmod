@@ -4,6 +4,6 @@ Inspired by [The Case for Selling FAANG and Buying BEEStMoD](https://medium.com/
 
 Usage
 ---
-All input is currently by url parameters: **stocks**, **crypto**, and **date**.  Currently stock data only go back 100 days (that markets are open, so typically 4.5 months).  Cryptos could go back much longer, but sometimes there are large gaps in older data, so it's recommended to stay within the 4.5 month range.
+All input is currently by url parameters: **stocks**, **crypto**, and **date**.  Currently stock data only go back 100 days (that markets are open, so typically 4.5 months).  Cryptos could go back much longer, but sometimes there are large gaps in older data, so it's recommended to stay within the 4.5 month range.  The data is generally updated once per day at midnight UTC (7pm EST).
 
 **[Give it a try](https://beestmod.glitch.me/?stocks=FB,AAPL,AMZN,NFLX,GOOG&crypto=BTC,BCH,ETH,EOS,XLM,XMR,DASH&date=2018-09-04)**, it works great on mobile too. You can zoom in/out, and tap/mouse over the graphs to see details.
