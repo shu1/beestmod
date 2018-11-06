@@ -60,7 +60,7 @@ app.get('/query', function(request, response) {
 
 			if (!row || row == "update") {
 				console.log(s + " request");
-				https.get("https://www.alphavantage.co/query?function=" + f + "&symbol=" + s + "&market=CNY&apikey=" + process.env.apikey, function(res) {
+				https.get("https://www.alphavantage.co/query?function=" + f + "&symbol=" + s + "&market=USD&apikey=" + process.env.apikey, function(res) {
 					var data = '';
 					res.on('data', function(chunk) {data += chunk});
 					res.on('end', function() {

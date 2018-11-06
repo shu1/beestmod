@@ -11,13 +11,13 @@ google.charts.load("current", {"packages":["corechart"]});
 google.charts.setOnLoadCallback(function() {
 	var startDate;	// = new Date("2018-07-10");
 	var assets = [{
-		sy: ["FB","AAPL","AMZN","NFLX","GOOG","GOOGL"],
+		sy: ["FB","AAPL","AMZN","NFLX","GOOG"],
 		fu: "TIME_SERIES_DAILY_ADJUSTED",
 		k1: "Time Series (Daily)",
 		k2: "5. adjusted close",
 		ma: ""
 	},{
-		sy: ["BTC","BCH","ETH","EOS","XLM","LTC"],
+		sy: ["BTC","BCH","ETH","EOS","XLM","XMR","DASH"],
 		fu: "DIGITAL_CURRENCY_DAILY",
 		k1: "Time Series (Digital Currency Daily)",
 		k2: "4b. close (USD)",
@@ -127,22 +127,18 @@ google.charts.setOnLoadCallback(function() {
 
 		var timeout=2000, array = [header];
 		while (--timeout > 0 && assets[0].ar.length && assets[1].ar.length) {
-			var shifted = false;
-			if (new Date(assets[0].ar[0][0]) < new Date(assets[1].ar[0][0])) {
-				assets[0].ar.shift();
-				shifted = true;
-			}
-			if (new Date(assets[0].ar[0][0]) > new Date(assets[1].ar[0][0])) {
-				assets[1].ar.shift();
-				shifted = true;
-			}
 			if (assets[0].ar[0][0] == assets[1].ar[0][0]) {
 				array.push([assets[0].ar[0][0], assets[0].ar[0][1], assets[1].ar[0][1]]);
 				assets[0].ar.shift();
 				assets[1].ar.shift();
-				shifted = true;
 			}
-			if (!shifted) {
+			else if (new Date(assets[0].ar[0][0]) < new Date(assets[1].ar[0][0])) {
+				assets[0].ar.shift();
+			}
+			else if (new Date(assets[0].ar[0][0]) > new Date(assets[1].ar[0][0])) {
+				assets[1].ar.shift();
+			}
+			else {
 				console.error(assets[0].ar[0][0] + " " + assets[1].ar[0][0]);
 			}
 		}
