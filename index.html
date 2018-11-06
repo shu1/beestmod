@@ -9,7 +9,7 @@
 <script>
 google.charts.load("current", {"packages":["corechart"]});
 google.charts.setOnLoadCallback(function() {
-	var startDate;	// = new Date("2018-07-10");
+	var startDate;
 	var assets = [{
 		sy: ["FB","AAPL","AMZN","NFLX","GOOG"],
 		fu: "TIME_SERIES_DAILY_ADJUSTED",
@@ -75,6 +75,19 @@ google.charts.setOnLoadCallback(function() {
 
 	function prepData(asset) {
 		var last = asset.as[asset.c].length-1;
+		for (var i=0; i < asset.l; ++i) {
+			if (asset.as[i].length > 0) {
+				if (last > asset.as[i].length-1) {
+					last = asset.as[i].length-1;
+					asset.c = i;
+				}
+				while (last > 0 && new Date(asset.as[i][last][0]) < startDate) {
+					--last;
+					asset.c = i;
+				}
+			}
+		}
+
 		var num=0, prices=[], shares=[];
 		var header = ["Date"];
 		asset.ac = "";
