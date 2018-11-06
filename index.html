@@ -104,6 +104,9 @@ google.charts.setOnLoadCallback(function() {
 		if (num == 1) {
 			asset.ac = asset.sy[asset.c];
 		}
+		else if (asset.ac == "BBEEXXD") {
+			asset.ac = "BEEStMoD";
+		}
 
 		asset.ar = [];
 		var array = [header];
@@ -123,7 +126,7 @@ google.charts.setOnLoadCallback(function() {
 			array.push(row);
 		}
 
-		drawChart(array);
+		drawChart(array, asset.ac);
 
 		if (assets[0].l == assets[0].sy.length && assets[1].l == assets[1].sy.length) {
 			prepComparison();
@@ -156,20 +159,22 @@ google.charts.setOnLoadCallback(function() {
 			}
 		}
 
-		drawChart(array);
+		drawChart(array, header[1] + " vs " + header[2]);
 	}
 
-	function drawChart(array) {
+	function drawChart(array, title) {
 		var div = document.createElement("div");
-		div.style = "width:960px;height:540px";
 		document.body.appendChild(div);
 
-		var data = google.visualization.arrayToDataTable(array);
 		var chart = new google.visualization.LineChart(div);
-		chart.draw(data);
+		chart.draw(google.visualization.arrayToDataTable(array), {
+			title: title,
+			width:980,
+			height:540
+		});
 	}
 });
 </script>
 </head>
-<body style="width:960px;margin-left:auto;margin-right:auto"></body>
+<body style="width:980px;margin-left:auto;margin-right:auto"></body>
 </html>
