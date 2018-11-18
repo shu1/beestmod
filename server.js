@@ -3,7 +3,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({extended:true}));
 app.use(express.static('public'));
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database('./.data/sqlite.db');
@@ -19,22 +19,22 @@ db.run("CREATE TABLE alphavantage(datetime TEXT NOT NULL, function TEXT NOT NULL
 	}
 });
 
-app.get('/', function(request, response) {
-	response.sendFile(__dirname + '/views/index.html');
+app.get('/', function(req, res) {
+	res.sendFile(__dirname + '/views/index.html');
 });
 
-app.get('/all', function(request, response) {
+app.get('/all', function(req, res) {
 	db.all("SELECT * FROM alphavantage", function(err, rows) {
 		if (err) console.error(err);
-		response.send(rows);
+		res.send(rows);
 	});
 });
 
 var https = require('https');
-app.get('/query', function(request, response) {
-	if (request.query && request.query.function && request.query.symbol) {
-		var f = request.query.function;
-		var s = request.query.symbol;
+app.get('/query', function(req, res) {
+	if (req.query && req.query.function && req.query.symbol) {
+		var f = req.query.function;
+		var s = req.query.symbol;
 
 		db.get("SELECT * FROM alphavantage WHERE function = ? AND symbol = ?", [f, s], function(err, row) {
 			if (err) console.error(err);
@@ -54,16 +54,16 @@ app.get('/query', function(request, response) {
 					row = "update";
 				}
 				else {
-					response.send(JSON.parse(row.json));
+					res.send(JSON.parse(row.json));
 				}
 			}
 
 			if (!row || row == "update") {
 				console.log(s + " request");
-				https.get("https://www.alphavantage.co/query?function=" + f + "&symbol=" + s + "&market=USD&apikey=" + process.env.apikey, function(res) {
+				https.get("https://www.alphavantage.co/query?function=" + f + "&symbol=" + s + "&market=USD&apikey=" + process.env.apikey, function(res2) {
 					var data = '';
-					res.on('data', function(chunk) {data += chunk});
-					res.on('end', function() {
+					res2.on('data', function(chunk) {data += chunk});
+					res2.on('end', function() {
 						var parsed = JSON.parse(data);
 						if (parsed["Meta Data"]) {
 							var query = "INSERT INTO alphavantage(datetime, json, function, symbol) VALUES(datetime('now'), ?, ?, ?)";
@@ -81,12 +81,12 @@ app.get('/query', function(request, response) {
 							console.error(s + " denied");
 							console.log(parsed);
 						}
-						response.send(parsed);
+						res.send(parsed);
 					});
 				});
 			}
 		});
 	} else {
-		response.send("");
+		res.send("");
 	}
 });
