@@ -24,13 +24,25 @@ app.get('/', function(req, res) {
 });
 
 app.get('/all', function(req, res) {
-	db.all("SELECT * FROM alphavantage", function(err, rows) {
+	db.all("SELECT symbol, datetime FROM alphavantage", function(err, rows) {
 		if (err) console.error(err);
 		res.send(rows);
 	});
 });
 
-var https = require('https');
+app.get('/cron', function(req, res) {
+	db.all("SELECT function, symbol FROM alphavantage WHERE date(datetime) < date('now') ORDER BY datetime", function(err, rows) {
+		if (err) console.error(err);
+		for (var i in rows) {
+			if (i < 5) {
+				console.log("cron " + rows[i].symbol);
+				get(rows[i].function, rows[i].symbol, true);
+			}
+		}
+		res.send(rows);
+	});
+});
+
 app.get('/query', function(req, res) {
 	if (req.query && req.query.function && req.query.symbol) {
 		var f = req.query.function;
@@ -59,34 +71,41 @@ app.get('/query', function(req, res) {
 			}
 
 			if (!row || row == "update") {
-				console.log(s + " request");
-				https.get("https://www.alphavantage.co/query?function=" + f + "&symbol=" + s + "&market=USD&apikey=" + process.env.apikey, function(res2) {
-					var data = '';
-					res2.on('data', function(chunk) {data += chunk});
-					res2.on('end', function() {
-						var parsed = JSON.parse(data);
-						if (parsed["Meta Data"]) {
-							var query = "INSERT INTO alphavantage(datetime, json, function, symbol) VALUES(datetime('now'), ?, ?, ?)";
-							if (row == "update") {
-								query = "UPDATE alphavantage SET datetime = datetime('now'), json = ? WHERE function = ? AND symbol = ?"
-								console.log(s + " update");
-							} else {
-								console.log(s + " insert");
-							}
-
-							db.run(query, [data, f, s], function(err) {
-								if (err) console.error(err);
-							});
-						} else {
-							console.error(s + " denied");
-							console.log(parsed);
-						}
-						res.send(parsed);
-					});
-				});
+				console.log(s + " get");
+				get(f, s, row == "update", res);
 			}
 		});
 	} else {
 		res.send("");
 	}
 });
+
+var https = require('https');
+function get(f, s, update, res) {
+	https.get("https://www.alphavantage.co/query?function=" + f + "&symbol=" + s + "&market=USD&apikey=" + process.env.apikey, function(res2) {
+		var data = '';
+		res2.on('data', function(chunk) {data += chunk});
+		res2.on('end', function() {
+			var parsed = JSON.parse(data);
+
+			if (parsed['Meta Data']) {
+				if (update) {
+					var query = "UPDATE alphavantage SET datetime = datetime('now'), json = ? WHERE function = ? AND symbol = ?"
+					console.log(s + " update");
+				} else {
+					var query = "INSERT INTO alphavantage(datetime, json, function, symbol) VALUES(datetime('now'), ?, ?, ?)";
+					console.log(s + " insert");
+				}
+
+				db.run(query, [data, f, s], function(err) {
+					if (err) console.error(err);
+				});
+			} else {
+				console.error(s + " denied");
+				console.log(parsed);
+			}
+
+			if (res) res.send(parsed);
+		});
+	});
+}
