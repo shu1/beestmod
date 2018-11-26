@@ -2,15 +2,15 @@
 	"name": "beestmod",
 	"version": "1.0.0",
 	"description": "FAANG vs BEEStMoD",
-	"main": "server.js",
+	"main": "index.js",
 	"scripts": {
-		"start": "node server.js"
+		"start": "node index.js"
 	},
 	"dependencies": {
-		"express": "^4.16.3",
-		"sqlite3": "^4.0.0"
+		"express": "^4.16.4",
+		"pg": "^7.6.1"
 	},
 	"engines": {
-		"node": "8.x"
+		"node": "10.x"
 	}
 }
