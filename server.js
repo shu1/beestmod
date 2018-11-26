@@ -12,7 +12,7 @@ var listener = app.listen(process.env.PORT, function() {
 	console.log('listening on port ' + listener.address().port);
 });
 
-db.run("CREATE TABLE alphavantage(datetime TEXT NOT NULL, function TEXT NOT NULL, symbol TEXT NOT NULL, market TEXT, json TEXT NOT NULL)", function(err) {
+db.run("CREATE TABLE alphavantage(datetime TEXT NOT NULL, function TEXT NOT NULL, symbol TEXT NOT NULL, json TEXT NOT NULL)", function(err) {
 	if (err) {
 		console.log(err);
 	} else {
@@ -81,7 +81,7 @@ function get(f, s, update, res) {
 			var parsed = JSON.parse(data);
 			if (parsed['Meta Data']) {
 				if (update) {
-					var query = "UPDATE alphavantage SET datetime = datetime('now'), json = ? WHERE function = ? AND symbol = ?"
+					var query = "UPDATE alphavantage SET datetime = datetime('now'), json = ? WHERE function = ? AND symbol = ?";
 					console.log(s + " update");
 				} else {
 					var query = "INSERT INTO alphavantage(datetime, json, function, symbol) VALUES(datetime('now'), ?, ?, ?)";
