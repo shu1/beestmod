@@ -31,6 +31,20 @@ express()
 			res.send(err);
 		}
 	})
+	.get('/cron', async (req, res) => {
+		try {
+			const client = await pool.connect();
+			const result = await client.query("SELECT function, symbol FROM alphavantage WHERE date_trunc('day', datetime) < CURRENT_DATE ORDER BY datetime");
+			for (var i=0; i<5 && i<result.rowCount; ++i) {
+				console.log("cron " + result.rows[i].symbol);
+				get(client, result.rows[i].function, result.rows[i].symbol, true);
+			}
+			res.send(result);
+			client.release();
+		} catch (err) {
+			res.send(err);
+		}
+	})
 	.get('/query', async (req, res) => {
 		try {
 			var client = await pool.connect();
@@ -64,7 +78,7 @@ express()
 
 			if (!row || row == "update") {
 				console.log(req.query.symbol + " get");
-				get(req.query.function, req.query.symbol, row == "update", client, res);
+				get(client, req.query.function, req.query.symbol, row == "update", res);
 			}
 
 			client.release();
@@ -75,7 +89,7 @@ express()
 	})
 	.listen(PORT, () => console.log(`Listening on ${ PORT }`))
 
-function get(f, s, update, client, res) {
+function get(client, f, s, update, res) {
 	var https = require('https');
 	https.get("https://www.alphavantage.co/query?function=" + f + "&symbol=" + s + "&market=USD&apikey=" + process.env.apikey, function(res2) {
 		var data = '';
