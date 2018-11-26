@@ -2,10 +2,7 @@
 "use strict";
 
 var express = require('express');
-var bodyParser = require('body-parser');
 var app = express();
-app.use(bodyParser.urlencoded({extended:true}));
-app.use(express.static('public'));
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database('./.data/sqlite.db');
 var listener = app.listen(process.env.PORT, function() {
@@ -21,7 +18,7 @@ db.run("CREATE TABLE alphavantage(datetime TEXT NOT NULL, function TEXT NOT NULL
 });
 
 app.get('/', function(req, res) {
-	res.sendFile(__dirname + '/views/index.html');
+	res.sendFile(__dirname + '/index.html');
 });
 
 app.get('/all', function(req, res) {
