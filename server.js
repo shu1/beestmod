@@ -49,7 +49,7 @@ app.get('/query', function(req, res) {
 		if (row) {
 			var date = new Date(row.datetime);
 			var now = new Date();	// must be UTC
-			console.log(req.query.symbol + " in db from " + row.datetime);
+			console.log(req.query.symbol + " " + row.datetime);
 
 			if (now.getFullYear() > date.getFullYear()) {
 				row = "update";
