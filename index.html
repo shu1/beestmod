@@ -69,7 +69,7 @@ google.charts.setOnLoadCallback(function() {
 				prepData(asset);
 			}
 		};
-		request.open("get", "https://www.alphavantage.co/query?function=" + asset.fu + "&symbol=" + asset.sy[index] + asset.ma + "&apikey=" + (params["apikey"]||btoa(Math.random()).slice(0,16).toUpperCase()));
+		request.open("get", "query?function=" + asset.fu + "&symbol=" + asset.sy[index] + asset.ma + "&apikey=" + (params["apikey"]||btoa(Math.random()).slice(0,16).toUpperCase()));
 		request.send();
 	}
 
