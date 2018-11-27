@@ -1,12 +1,12 @@
 // Shuichi Aizawa 2018 github.com/shu1
 "use strict";
 
-var express = require('express');
+var express = require("express");
 var app = express();
-var sqlite3 = require('sqlite3').verbose();
-var db = new sqlite3.Database('./.data/sqlite.db');
+var sqlite3 = require("sqlite3").verbose();
+var db = new sqlite3.Database("./.data/sqlite.db");
 var listener = app.listen(process.env.PORT, function() {
-	console.log('listening on port ' + listener.address().port);
+	console.log("listening on port " + listener.address().port);
 });
 var prevCron;
 
@@ -18,11 +18,11 @@ db.run("CREATE TABLE alphavantage(datetime TEXT NOT NULL, function TEXT NOT NULL
 	}
 });
 
-app.get('/', function(req, res) {
-	res.sendFile(__dirname + '/index.html');
+app.get("/", function(req, res) {
+	res.sendFile(__dirname + "/index.html");
 });
 
-app.get('/all', function(req, res) {
+app.get("/all", function(req, res) {
 	db.all("SELECT symbol, datetime FROM alphavantage", function(err, rows) {
 		if (err) {
 			res.send(err);
@@ -32,16 +32,17 @@ app.get('/all', function(req, res) {
 	});
 });
 
-app.get('/cron', function(req, res) {
+app.get("/cron", function(req, res) {
 	prevCron = 10000000;
 	cron(res);
 });
 
-app.get('/query', function(req, res) {
+app.get("/query", function(req, res) {
 	db.get("SELECT * FROM alphavantage WHERE function = ? AND symbol = ?", [req.query.function, req.query.symbol], function(err, row) {
 		if (err) {
 			console.error(err);
-		} else if (row) {
+		}
+		else if (row) {
 			var date = new Date(row.datetime);
 			var now = new Date();	// must be UTC
 			console.log(req.query.symbol + " " + row.datetime);
@@ -71,7 +72,7 @@ function cron(res) {
 	db.all("SELECT function, symbol FROM alphavantage WHERE date(datetime) < date('now') ORDER BY datetime", function(err, rows) {
 		if (err) {
 			console.error(err);
-			res.send(err);
+			res && res.send(err);
 		} else {
 			for (var i=0; i<5 && i<rows.length; ++i) {
 				console.log("cron " + rows[i].symbol);
@@ -88,13 +89,13 @@ function cron(res) {
 }
 
 function get(f, s, update, res) {
-	var https = require('https');
+	var https = require("https");
 	https.get("https://www.alphavantage.co/query?function=" + f + "&symbol=" + s + "&market=USD&apikey=" + process.env.apikey, function(response) {
-		var data = '';
-		response.on('data', function(chunk) {data += chunk});
-		response.on('end', function() {
+		var data = "";
+		response.on("data", function(chunk) {data += chunk});
+		response.on("end", function() {
 			var parsed = JSON.parse(data);
-			if (parsed['Meta Data']) {
+			if (parsed["Meta Data"]) {
 				if (update) {
 					var query = "UPDATE alphavantage SET datetime = datetime('now'), json = ? WHERE function = ? AND symbol = ?";
 					console.log(s + " update");
@@ -110,7 +111,6 @@ function get(f, s, update, res) {
 				console.error(s + " denied");
 				console.log(parsed);
 			}
-
 			res && res.send(parsed);
 		});
 	});
