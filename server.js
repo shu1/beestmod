@@ -8,6 +8,7 @@ var db = new sqlite3.Database('./.data/sqlite.db');
 var listener = app.listen(process.env.PORT, function() {
 	console.log('listening on port ' + listener.address().port);
 });
+var prevCron;
 
 db.run("CREATE TABLE alphavantage(datetime TEXT NOT NULL, function TEXT NOT NULL, symbol TEXT NOT NULL, json TEXT NOT NULL)", function(err) {
 	if (err) {
@@ -23,25 +24,19 @@ app.get('/', function(req, res) {
 
 app.get('/all', function(req, res) {
 	db.all("SELECT symbol, datetime FROM alphavantage", function(err, rows) {
-		if (err) console.error(err);
+		err && console.error(err);
 		res.send(rows);
 	});
 });
 
 app.get('/cron', function(req, res) {
-	db.all("SELECT function, symbol FROM alphavantage WHERE date(datetime) < date('now') ORDER BY datetime", function(err, rows) {
-		if (err) console.error(err);
-		for (var i=0; i<5 && i<rows.length; ++i) {
-			console.log("cron " + rows[i].symbol);
-			get(rows[i].function, rows[i].symbol, true);
-		}
-		res.send(rows);
-	});
+	prevCron = 10000000;
+	cron(res);
 });
 
 app.get('/query', function(req, res) {
 	db.get("SELECT * FROM alphavantage WHERE function = ? AND symbol = ?", [req.query.function, req.query.symbol], function(err, row) {
-		if (err) console.error(err);
+		err && console.error(err);
 
 		if (row) {
 			var date = new Date(row.datetime);
@@ -69,6 +64,23 @@ app.get('/query', function(req, res) {
 	});
 });
 
+function cron(res) {
+	db.all("SELECT function, symbol FROM alphavantage WHERE date(datetime) < date('now') ORDER BY datetime", function(err, rows) {
+		err && console.error(err);
+
+		for (var i=0; i<5 && i<rows.length; ++i) {
+			console.log("cron " + rows[i].symbol);
+			get(rows[i].function, rows[i].symbol, true);
+		}
+		res && res.send(rows);
+
+		if (rows.length < prevCron) {
+			prevCron = rows.length;
+			setTimeout(cron, 1000*60*2);
+		}
+	});
+}
+
 function get(f, s, update, res) {
 	var https = require('https');
 	https.get("https://www.alphavantage.co/query?function=" + f + "&symbol=" + s + "&market=USD&apikey=" + process.env.apikey, function(res2) {
@@ -86,14 +98,14 @@ function get(f, s, update, res) {
 				}
 
 				db.run(query, [data,f,s], function(err) {
-					if (err) console.error(err);
+					err && console.error(err);
 				});
 			} else {
 				console.error(s + " denied");
 				console.log(parsed);
 			}
 
-			if (res) res.send(parsed);
+			res && res.send(parsed);
 		});
 	});
 }
