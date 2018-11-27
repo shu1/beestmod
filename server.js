@@ -24,8 +24,11 @@ app.get('/', function(req, res) {
 
 app.get('/all', function(req, res) {
 	db.all("SELECT symbol, datetime FROM alphavantage", function(err, rows) {
-		err && console.error(err);
-		res.send(rows);
+		if (err) {
+			res.send(err);
+		} else {
+			res.send(rows);
+		}
 	});
 });
 
@@ -36,9 +39,9 @@ app.get('/cron', function(req, res) {
 
 app.get('/query', function(req, res) {
 	db.get("SELECT * FROM alphavantage WHERE function = ? AND symbol = ?", [req.query.function, req.query.symbol], function(err, row) {
-		err && console.error(err);
-
-		if (row) {
+		if (err) {
+			console.error(err);
+		} else if (row) {
 			var date = new Date(row.datetime);
 			var now = new Date();	// must be UTC
 			console.log(req.query.symbol + " " + row.datetime);
@@ -66,27 +69,30 @@ app.get('/query', function(req, res) {
 
 function cron(res) {
 	db.all("SELECT function, symbol FROM alphavantage WHERE date(datetime) < date('now') ORDER BY datetime", function(err, rows) {
-		err && console.error(err);
+		if (err) {
+			console.error(err);
+			res.send(err);
+		} else {
+			for (var i=0; i<5 && i<rows.length; ++i) {
+				console.log("cron " + rows[i].symbol);
+				get(rows[i].function, rows[i].symbol, true);
+			}
+			res && res.send(rows);
 
-		for (var i=0; i<5 && i<rows.length; ++i) {
-			console.log("cron " + rows[i].symbol);
-			get(rows[i].function, rows[i].symbol, true);
-		}
-		res && res.send(rows);
-
-		if (rows.length < prevCron) {
-			prevCron = rows.length;
-			setTimeout(cron, 1000*60*2);
+			if (rows.length > 0 && rows.length < prevCron) {
+				prevCron = rows.length;
+				setTimeout(cron, 1000*60*2);
+			}
 		}
 	});
 }
 
 function get(f, s, update, res) {
 	var https = require('https');
-	https.get("https://www.alphavantage.co/query?function=" + f + "&symbol=" + s + "&market=USD&apikey=" + process.env.apikey, function(res2) {
+	https.get("https://www.alphavantage.co/query?function=" + f + "&symbol=" + s + "&market=USD&apikey=" + process.env.apikey, function(response) {
 		var data = '';
-		res2.on('data', function(chunk) {data += chunk});
-		res2.on('end', function() {
+		response.on('data', function(chunk) {data += chunk});
+		response.on('end', function() {
 			var parsed = JSON.parse(data);
 			if (parsed['Meta Data']) {
 				if (update) {
