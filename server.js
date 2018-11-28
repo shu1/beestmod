@@ -7,9 +7,7 @@ var sqlite3 = require("sqlite3").verbose();
 var db = new sqlite3.Database("./.data/sqlite.db");
 
 db.run("CREATE TABLE IF NOT EXISTS alphavantage(datetime TEXT NOT NULL, function TEXT NOT NULL, symbol TEXT NOT NULL, json TEXT NOT NULL)", function(err) {
-	if (err) {
-		console.error(err);
-	}
+	err && console.error(err);
 });
 
 app.get("/", function(req, res) {
@@ -26,10 +24,12 @@ app.get("/all", function(req, res) {
 	});
 });
 
-var prevCron;
-app.get("/cron", function(req, res) {
-	prevCron = 10000000;
-	cron(res);
+app.get("/crons", function(req, res) {
+	cron("TIME_SERIES_DAILY_ADJUSTED", 10000000, res);
+});
+
+app.get("/cronc", function(req, res) {
+	cron("DIGITAL_CURRENCY_DAILY", 10000000, res);
 });
 
 app.get("/query", function(req, res) {
@@ -64,8 +64,9 @@ app.get("/query", function(req, res) {
 	});
 });
 
-function cron(res) {
-	db.all("SELECT function, symbol FROM alphavantage WHERE date(datetime) < date('now') ORDER BY datetime", function(err, rows) {
+function cron(f, prev, res) {
+	console.log("cron " + f + " " + prev);
+	db.all("SELECT function, symbol FROM alphavantage WHERE function = ? AND date(datetime) < date('now') ORDER BY datetime", [f], function(err, rows) {
 		if (err) {
 			console.error(err);
 			res && res.send(err);
@@ -76,9 +77,8 @@ function cron(res) {
 			}
 			res && res.send(rows);
 
-			if (rows.length > 0 && rows.length < prevCron) {
-				prevCron = rows.length;
-				setTimeout(cron, 1000*60*2);
+			if (rows.length > 0 && rows.length < prev) {
+				setTimeout(cron, 1000*60*2, f, rows.length);
 			}
 		}
 	});
