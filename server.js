@@ -5,16 +5,10 @@ var express = require("express");
 var app = express();
 var sqlite3 = require("sqlite3").verbose();
 var db = new sqlite3.Database("./.data/sqlite.db");
-var listener = app.listen(process.env.PORT, function() {
-	console.log("listening on port " + listener.address().port);
-});
-var prevCron;
 
-db.run("CREATE TABLE alphavantage(datetime TEXT NOT NULL, function TEXT NOT NULL, symbol TEXT NOT NULL, json TEXT NOT NULL)", function(err) {
+db.run("CREATE TABLE IF NOT EXISTS alphavantage(datetime TEXT NOT NULL, function TEXT NOT NULL, symbol TEXT NOT NULL, json TEXT NOT NULL)", function(err) {
 	if (err) {
-		console.log(err);
-	} else {
-		console.error("table created");
+		console.error(err);
 	}
 });
 
@@ -32,6 +26,7 @@ app.get("/all", function(req, res) {
 	});
 });
 
+var prevCron;
 app.get("/cron", function(req, res) {
 	prevCron = 10000000;
 	cron(res);
@@ -43,6 +38,7 @@ app.get("/query", function(req, res) {
 			console.error(err);
 		}
 		else if (row) {
+
 			var date = new Date(row.datetime);
 			var now = new Date();	// must be UTC
 			console.log(req.query.symbol + " " + row.datetime);
@@ -115,3 +111,7 @@ function get(f, s, update, res) {
 		});
 	});
 }
+
+var listener = app.listen(process.env.PORT, function() {
+	console.log("listening on " + listener.address().port);
+});
