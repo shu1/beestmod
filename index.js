@@ -7,9 +7,7 @@ var {Pool} = require("pg");
 var pool = new Pool({connectionString:process.env.DATABASE_URL, ssl:true});
 
 pool.query("CREATE TABLE IF NOT EXISTS alphavantage(datetime TIMESTAMPTZ NOT NULL, function TEXT NOT NULL, symbol TEXT NOT NULL, json TEXT NOT NULL)", function(err, result) {
-	if (err) {
-		console.error(err);
-	}
+	err && console.error(err);
 });
 
 app.get("/", function(req, res) {
@@ -26,10 +24,12 @@ app.get("/all", function(req, res) {
 	});
 });
 
-var prevCron;
-app.get("/cron", function(req, res) {
-	prevCron = 10000000;
-	cron(res);
+app.get("/crons", function(req, res) {
+	cron("TIME_SERIES_DAILY_ADJUSTED", 10000000, res);
+});
+
+app.get("/cronc", function(req, res) {
+	cron("DIGITAL_CURRENCY_DAILY", 10000000, res);
 });
 
 app.get("/query", function(req, res) {
@@ -64,8 +64,9 @@ app.get("/query", function(req, res) {
 	});
 });
 
-function cron(res) {
-	pool.query("SELECT function, symbol FROM alphavantage WHERE date_trunc('day', datetime) < CURRENT_DATE ORDER BY datetime", function(err, result) {
+function cron(f, prev, res) {
+	console.log("cron " + f + " " + prev);
+	pool.query("SELECT function, symbol FROM alphavantage WHERE function = $1 AND date_trunc('day', datetime) < CURRENT_DATE ORDER BY datetime", [f], function(err, result) {
 		if (err) {
 			console.error(err);
 			res && res.send(err);
@@ -76,9 +77,8 @@ function cron(res) {
 			}
 			res && res.send(result);
 
-			if (result.rowCount > 0 && result.rowCount < prevCron) {
-				prevCron = result.rowCount;
-				setTimeout(cron, 1000*60*2);
+			if (result.rowCount > 0 && result.rowCount < prev) {
+				setTimeout(cron, 1000*60*2, f, result.rowCount);
 			}
 		}
 	});
