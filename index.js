@@ -1,71 +1,68 @@
 // Shuichi Aizawa 2018 github.com/shu1
 "use strict";
 
-const express = require("express");
-const PORT = process.env.PORT || 5000;
-const {Pool} = require("pg");
-const pool = new Pool({
-	connectionString: process.env.DATABASE_URL,
-	ssl: true
+var express = require("express");
+var app = express();
+var {Pool} = require("pg");
+var pool = new Pool({connectionString:process.env.DATABASE_URL, ssl:true});
+
+pool.query("CREATE TABLE IF NOT EXISTS alphavantage(datetime TIMESTAMPTZ NOT NULL, function TEXT NOT NULL, symbol TEXT NOT NULL, json TEXT NOT NULL)", function(err, result) {
+	if (err) {
+		console.error(err);
+	}
 });
+
+app.get("/", function(req, res) {
+	res.sendFile(__dirname + "/index.html");
+});
+
+app.get("/all", function(req, res) {
+	pool.query("SELECT symbol, datetime FROM alphavantage", function(err, result) {
+		if (err) {
+			res.send(err);
+		} else {
+			res.send(result);
+		}
+	});
+});
+
 var prevCron;
+app.get("/cron", function(req, res) {
+	prevCron = 10000000;
+	cron(res);
+});
 
-express()
-	.get("/", (req, res) => res.sendFile(__dirname + "/index.html"))
-	.get("/all", async (req, res) => {
-		pool.query("SELECT symbol, datetime FROM alphavantage", function(err, result) {
-			if (err) {
-				res.send(err);
-			} else {
-				res.send(result);
-			}
-		});
-	})
-	.get("/create", async (req, res) => {
-		pool.query("CREATE TABLE IF NOT EXISTS alphavantage(datetime TIMESTAMPTZ NOT NULL, function TEXT NOT NULL, symbol TEXT NOT NULL, json TEXT NOT NULL)", function(err, result) {
-			if (err) {
-				res.send(err);
-			} else {
-				res.send(result);
-			}
-		});
-	})
-	.get("/cron", async (req, res) => {
-		prevCron = 10000000;
-		cron(res);
-	})
-	.get("/query", async (req, res) => {
-		pool.query("SELECT * FROM alphavantage WHERE function = $1 AND symbol = $2", [req.query.function, req.query.symbol], function(err, result) {
-			if (err) {
-				console.error(err);
-			}
-			else if (result && result.rowCount > 0) {
-				var row = result.rows[0];
-				var date = new Date(row.datetime);
-				var now = new Date();	// must be UTC
-				console.log(req.query.symbol + " " + row.datetime);
+app.get("/query", function(req, res) {
+	pool.query("SELECT * FROM alphavantage WHERE function = $1 AND symbol = $2", [req.query.function, req.query.symbol], function(err, result) {
+		if (err) {
+			console.error(err);
+		}
+		else if (result && result.rowCount > 0) {
+			var row = result.rows[0];
+			var date = new Date(row.datetime);
+			var now = new Date();	// must be UTC
+			console.log(req.query.symbol + " " + row.datetime);
 
-				if (now.getFullYear() > date.getFullYear()) {
-					row = "update";
-				}
-				else if (now.getMonth() > date.getMonth()) {
-					row = "update";
-				}
-				else if (now.getDate() > date.getDate()) {
-					row = "update";
-				}
-				else {
-					res.send(JSON.parse(row.json));
-				}
+			if (now.getFullYear() > date.getFullYear()) {
+				row = "update";
 			}
+			else if (now.getMonth() > date.getMonth()) {
+				row = "update";
+			}
+			else if (now.getDate() > date.getDate()) {
+				row = "update";
+			}
+			else {
+				res.send(JSON.parse(row.json));
+			}
+		}
 
-			if (!row || row == "update") {
-				console.log(req.query.symbol + " get");
-				get(req.query.function, req.query.symbol, row == "update", res);
-			}
-		});
-	})
-	.listen(PORT, () => console.log(`Listening on ${ PORT }`))
+		if (!row || row == "update") {
+			console.log(req.query.symbol + " get");
+			get(req.query.function, req.query.symbol, row == "update", res);
+		}
+	});
+});
 
 function cron(res) {
 	pool.query("SELECT function, symbol FROM alphavantage WHERE date_trunc('day', datetime) < CURRENT_DATE ORDER BY datetime", function(err, result) {
@@ -114,3 +111,7 @@ function get(f, s, update, res) {
 		});
 	});
 }
+
+var listener = app.listen(process.env.PORT, function() {
+	console.log("listening on " + listener.address().port);
+});
