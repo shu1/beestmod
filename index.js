@@ -48,7 +48,7 @@ app.get("/", function(req, res) {
 });
 
 app.get("/all", function(req, res) {
-	pool.query("SELECT symbol, datetime FROM alphavantage", function(err, result) {
+	pool.query("SELECT symbol, datetime FROM alphavantage ORDER BY datetime", function(err, result) {
 		if (err) {
 			res.send(err);
 		} else {
@@ -58,16 +58,20 @@ app.get("/all", function(req, res) {
 });
 
 app.get("/crons", function(req, res) {
-	cron("TIME_SERIES_DAILY_ADJUSTED", 10000000, res);
+	var date = new Date();
+	date.setHours(0,3,0);
+	cron("TIME_SERIES_DAILY_ADJUSTED", date, 10000000, res);
 });
 
 app.get("/cronc", function(req, res) {
-	cron("DIGITAL_CURRENCY_DAILY", 10000000, res);
+	var date = new Date();
+	date.setHours(1,53,0);
+	cron("DIGITAL_CURRENCY_DAILY", date, 10000000, res);
 });
 
-function cron(f, prev, res) {
+function cron(f, time, prev, res) {
 	console.log("cron " + f + " " + prev);
-	pool.query("SELECT function, symbol FROM alphavantage WHERE function = $1", [f], function(err, result) {
+	pool.query("SELECT function, symbol FROM alphavantage WHERE function = $1 AND datetime < $2 ORDER BY datetime", [f, time], function(err, result) {
 		if (err) {
 			console.error(err);
 			res && res.send(err);
@@ -78,14 +82,14 @@ function cron(f, prev, res) {
 			res && res.send(result);
 
 			if (result.rowCount > 5 && result.rowCount < prev) {
-				setTimeout(cron, 1000*65, f, result.rowCount);
+				setTimeout(cron, 1000*65, f, time, result.rowCount);
 			}
 		}
 	});
 }
 
 app.get("/query", function(req, res) {
-	pool.query("SELECT data FROM alphavantage WHERE function = $1 AND symbol = $2 AND date_trunc('day', datetime) = CURRENT_DATE", [req.query.function, req.query.symbol], function(err, result) {
+	pool.query("SELECT data FROM alphavantage WHERE function = $1 AND symbol = $2", [req.query.function, req.query.symbol], function(err, result) {
 		if (err) {
 			console.error(err);
 		}
