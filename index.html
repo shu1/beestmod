@@ -38,7 +38,9 @@ google.charts.setOnLoadCallback(function() {
 
 	for (var i=0; i < assets.length; ++i) {
 		assets[i].l=0;
-		assets[i].c=-1;
+		assets[i].n=0;
+		assets[i].i=-1;
+		assets[i].st=9999;
 		assets[i].as=[];
 		for (var j=0; j < assets[i].sy.length; ++j) {
 			getData(assets[i], j);
@@ -59,81 +61,77 @@ google.charts.setOnLoadCallback(function() {
 			}
 			if (prevDate && (!startDate || startDate <= prevDate)) {
 				startDate = prevDate;
-				asset.c = index;
 			}
-			asset.as[index] = rows;
+			if (rows.length > 0) {
+				asset.n++;
+				asset.as[index] = rows;
+				if (asset.st > rows.length-1) {
+					asset.st = rows.length-1;
+					asset.i = index;
+				}
+			}
 			console.log(asset.sy[index] + " " + rows.length);
 
 			asset.l++;
-			if (asset.l == asset.sy.length && asset.c >= 0) {
-				asset.la = asset.as[asset.c].length-1;
-				for (var i=0; i < asset.l; ++i) {
-					if (asset.as[i].length > 0) {
-						if (asset.la > asset.as[i].length-1) {
-							asset.la = asset.as[i].length-1;
-							asset.c = i;
-						}
-					}
-				}
-				asset.st = asset.la;
+			if (asset.l == asset.sy.length && asset.n > 0) {
+				asset.la = asset.st;
 				prepData(asset, true);
 			}
 		};
-		request.open("get", "query?function=" + asset.fu + "&symbol=" + asset.sy[index] + asset.ma + "&apikey=" + (params["apikey"]||btoa(Math.random()).slice(0,16).toUpperCase()));
+		request.open("get", "query?function=" + asset.fu + "&symbol=" + asset.sy[index] + asset.ma + "&market=USD&apikey=" + (params["apikey"]||btoa(Math.random()).slice(0,16).toUpperCase()));
 		request.send();
 	}
 
 	function prepData(asset, versus, dy) {
 		for (var i=0; i < asset.l; ++i) {
-			while (dy > 0 && asset.la > 0 && new Date(asset.as[i][asset.la][0]) < startDate) {
+			while (asset.as[i] && dy > 0 && asset.la > 0 && new Date(asset.as[i][asset.la][0]) < startDate) {
 				asset.la -= dy;
 			}
-			while (dy < 0 && asset.la < asset.st && new Date(asset.as[i][asset.la][0]) > startDate) {
+			while (asset.as[i] && dy < 0 && asset.la < asset.st && new Date(asset.as[i][asset.la][0]) > startDate) {
 				asset.la -= dy;
 			}
 		}
 
-		var num=0, prices=[], shares=[], header = ["Date"];
-		asset.ac = "";
+		var prices=[], shares=[], header = ["Date"];
+		asset.ti = "";
 		for (var i=0; i < asset.l; ++i) {
-			if (asset.as[i].length > 0) {
+			if (asset.as[i]) {
 				header.push(asset.sy[i]);
-				asset.ac += asset.sy[i].slice(0,1);
+				asset.ti += asset.sy[i].slice(0,1);
 				prices[i] = asset.as[i][asset.la][1];
 				shares[i] = 1 / prices[i];
-				++num;
 			}
 		}
 
-		if (num == 1) {
-			asset.ac = asset.sy[asset.c];
+		if (asset.n == 1) {
+			asset.ti = asset.sy[asset.i];
 		}
-		else if (asset.ac == "BBEEXXD") {
-			asset.ac = "BEEStMoD";
+		else if (asset.ti == "BBEEXXD") {
+			asset.ti = "BEEStMoD";
 		}
 
 		asset.ar = [];
 		var array = [header], logs=[];
 		for (var j = asset.la; j >= 0; --j) {
-			var sum=0, row = [asset.as[asset.c][j][0]];
+			var sum=0, row = [asset.as[asset.i][j][0]];
 			for (var i=0; i < asset.as.length; ++i) {
-				if (asset.as[i].length > 0) {
+				if (asset.as[i]) {
 					var price = asset.as[i][j][1];
 					sum += price * shares[i];
 					row.push(((price / prices[i]) - 1) * 100);
-					if (asset.as[i][j][0] != asset.as[asset.c][j][0]) {
-						logs.push(asset.sy[asset.c] + " " + asset.as[asset.c][j][0] + " " + asset.sy[i] + " " + asset.as[i][j][0]);
+					if (asset.as[i][j][0] != asset.as[asset.i][j][0]) {
+						logs.push(asset.sy[asset.i] + " " + asset.as[asset.i][j][0] + " " + asset.sy[i] + " " + asset.as[i][j][0]);
 					}
 				}
 			}
-			asset.ar.push([asset.as[asset.c][j][0], ((sum / num) - 1) * 100]);
+			asset.ar.push([asset.as[asset.i][j][0], ((sum / asset.n) - 1) * 100]);
 			array.push(row);
 		}
 		logs.length > 0 && console.error(logs);
 
-		asset.ch = drawChart(array, asset.ac, asset.ch);
+		asset.ch = drawChart(array, asset.ti, asset.ch);
 
-		if (versus && assets[0].l == assets[0].sy.length && assets[1].l == assets[1].sy.length) {
+		if (versus && assets[0].l == assets[0].sy.length && assets[1].l == assets[1].sy.length && assets[0].n > 0 && assets[1].n > 0) {
 			prepVersus();
 		}
 	}
@@ -142,8 +140,8 @@ google.charts.setOnLoadCallback(function() {
 	function prepVersus() {
 		var header = ["Date"];
 		for (var i=0; i < assets.length; ++i) {
-			if (assets[i].ac) {
-				header.push(assets[i].ac);
+			if (assets[i].ti) {
+				header.push(assets[i].ti);
 			}
 		}
 
@@ -184,29 +182,29 @@ google.charts.setOnLoadCallback(function() {
 		return chart;
 	}
 
-	keys = [0,0];
+	keys=[0,0];
 	window.addEventListener("keydown", function(event) {
 		switch (event.key) {
 		case "q":
-			if (!keys[0]) {
+			if (!keys[0] && !keys[1]) {
 				keys[0] = -1;
 				zoom(0);
 			}
 			break;
 		case "w":
-			if (!keys[0]) {
+			if (!keys[0] && !keys[1]) {
 				keys[0] = 1;
 				zoom(0);
 			}
 			break;
 		case "a":
-			if (!keys[1]) {
+			if (!keys[0] && !keys[1]) {
 				keys[1] = -1;
 				zoom(1);
 			}
 			break;
 		case "s":
-			if (!keys[1]) {
+			if (!keys[0] && !keys[1]) {
 				keys[1] = 1;
 				zoom(1);
 			}
@@ -214,7 +212,7 @@ google.charts.setOnLoadCallback(function() {
 		}
 
 		function zoom(i) {
-			if (keys[i] > 0 && assets[i].la > 0 || keys[i] < 0 && assets[i].la < assets[i].st) {
+			if (assets[i].n > 0 && (keys[i] > 0 && assets[i].la > 0 || keys[i] < 0 && assets[i].la < assets[i].st)) {
 				assets[i].la -= keys[i];
 				prepData(assets[i]);
 				setTimeout(zoom, 100, i);
@@ -235,9 +233,11 @@ google.charts.setOnLoadCallback(function() {
 		}
 
 		function zoomEnd(i) {
-			var asset = assets[i];
-			startDate = new Date(asset.as[asset.c][asset.la][0]);
-			prepData(assets[1-i], true, keys[i]);
+			if (assets[0].n > 0 && assets[1].n > 0) {
+				var asset = assets[i];
+				startDate = new Date(asset.as[asset.i][asset.la][0]);
+				prepData(assets[1-i], true, keys[i]);
+			}
 			keys[i] = 0;
 		}
 	});
