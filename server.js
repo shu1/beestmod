@@ -13,8 +13,8 @@ db.run("CREATE TABLE alphavantage(datetime TEXT NOT NULL, function TEXT NOT NULL
 	} else {
 		console.error("table created");
 		init("TIME_SERIES_DAILY_ADJUSTED", ["FB","AAPL","AMZN","NFLX","GOOG"]);
-		setTimeout(init, 1000*65,  "DIGITAL_CURRENCY_DAILY", ["BTC","BCH","ETH","EOS","XLM"]);
-		setTimeout(init, 1000*130, "DIGITAL_CURRENCY_DAILY", ["XMR","DASH"]);
+		setTimeout(init, 65000,  "DIGITAL_CURRENCY_DAILY", ["BTC","BCH","ETH","EOS","XLM"]);
+		setTimeout(init, 130000, "DIGITAL_CURRENCY_DAILY", ["XMR","DASH"]);
 	}
 });
 
@@ -38,7 +38,7 @@ function get(f, s, res) {
 			} else {
 				console.error(s + " denied");
 			}
-			res && res.send(parsed);
+			res && res.send(data);
 		});
 	});
 }
@@ -65,7 +65,7 @@ app.get("/crons", function(req, res) {
 
 app.get("/cronc", function(req, res) {
 	var date = new Date();
-	date.setHours(1,53,0);
+	date.setHours(1,33,0);
 	cron("DIGITAL_CURRENCY_DAILY", date.toISOString(), 10000000, res);
 });
 
@@ -82,7 +82,7 @@ function cron(f, time, prev, res) {
 			res && res.send(rows);
 
 			if (rows.length > 5 && rows.length < prev) {
-				setTimeout(cron, 1000*65, f, time, rows.length);
+				setTimeout(cron, 65000, f, time, rows.length);
 			}
 		}
 	});
@@ -96,7 +96,7 @@ app.get("/query", function(req, res) {
 		else if (row) {
 
 			console.log(req.query.symbol + " in db");
-			res.send(JSON.parse(row.data));
+			res.send(row.data);
 		} else {
 			get(req.query.function, req.query.symbol, res);
 		}
