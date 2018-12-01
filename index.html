@@ -37,7 +37,7 @@ google.charts.setOnLoadCallback(function() {
 		assets[1].sy = params["crypto"] ? params["crypto"].split(",") : [];
 	}
 
-	for (var i=0; i < assets.length; ++i) {
+	for (var i=0; i < 2; ++i) {
 		assets[i].l=0;
 		assets[i].c=-1;
 		assets[i].as=[];
@@ -66,28 +66,27 @@ google.charts.setOnLoadCallback(function() {
 
 			asset.l++;
 			if (asset.l == asset.sy.length && asset.c >= 0) {
-				prepData(asset);
+				asset.st = asset.la = asset.as[asset.c].length-1;
+				for (var i=0; i < asset.l; ++i) {
+					if (asset.as[i].length > 0) {
+						if (asset.la > asset.as[i].length-1) {
+							asset.la = asset.as[i].length-1;
+							asset.c = i;
+						}
+						while (asset.la > 0 && new Date(asset.as[i][asset.la][0]) < startDate) {
+							--asset.la;
+							asset.c = i;
+						}
+					}
+				}
+				prepData(asset, true);
 			}
 		};
 		request.open("get", "query?function=" + asset.fu + "&symbol=" + asset.sy[index] + asset.ma + "&apikey=" + (params["apikey"]||btoa(Math.random()).slice(0,16).toUpperCase()));
 		request.send();
 	}
 
-	function prepData(asset) {
-		var last = asset.as[asset.c].length-1;
-		for (var i=0; i < asset.l; ++i) {
-			if (asset.as[i].length > 0) {
-				if (last > asset.as[i].length-1) {
-					last = asset.as[i].length-1;
-					asset.c = i;
-				}
-				while (last > 0 && new Date(asset.as[i][last][0]) < startDate) {
-					--last;
-					asset.c = i;
-				}
-			}
-		}
-
+	function prepData(asset, compare) {
 		var num=0, prices=[], shares=[];
 		var header = ["Date"];
 		asset.ac = "";
@@ -95,7 +94,7 @@ google.charts.setOnLoadCallback(function() {
 			if (asset.as[i].length > 0) {
 				header.push(asset.sy[i]);
 				asset.ac += asset.sy[i].slice(0,1);
-				prices[i] = asset.as[i][last][1];
+				prices[i] = asset.as[i][asset.la][1];
 				shares[i] = 1 / prices[i];
 				++num;
 			}
@@ -110,7 +109,7 @@ google.charts.setOnLoadCallback(function() {
 
 		asset.ar = [];
 		var array = [header];
-		for (var j = last; j >= 0; --j) {
+		for (var j = asset.la; j >= 0; --j) {
 			var sum=0, row = [asset.as[asset.c][j][0]];
 			for (var i=0; i < asset.as.length; ++i) {
 				if (asset.as[i].length > 0) {
@@ -126,9 +125,9 @@ google.charts.setOnLoadCallback(function() {
 			array.push(row);
 		}
 
-		drawChart(array, asset.ac);
+		asset.chart = drawChart(array, asset.ac, asset.chart);
 
-		if (assets[0].l == assets[0].sy.length && assets[1].l == assets[1].sy.length) {
+		if (compare && assets[0].l == assets[0].sy.length && assets[1].l == assets[1].sy.length) {
 			prepComparison();
 		}
 	}
@@ -162,16 +161,70 @@ google.charts.setOnLoadCallback(function() {
 		drawChart(array, header[1] + " vs " + header[2]);
 	}
 
-	function drawChart(array, title) {
-		var div = document.createElement("div");
-		document.body.appendChild(div);
+	function drawChart(array, title, chart) {
+		if (!chart) {
+			var div = document.createElement("div");
+			document.body.appendChild(div);
+			chart = new google.visualization.LineChart(div);
+		}
 
-		var chart = new google.visualization.LineChart(div);
 		chart.draw(google.visualization.arrayToDataTable(array), {
 			title: title,
 			width:980,
 			height:540
 		});
+
+		return chart;
+	}
+
+	keys = [0,0];
+	window.addEventListener("keydown", function(event) {
+		switch (event.key) {
+		case "q":
+			if (!keys[0]) {
+				keys[0] = -1;
+				zoom(0);
+			}
+			break;
+		case "w":
+			if (!keys[0]) {
+				keys[0] = 1;
+				zoom(0);
+			}
+			break;
+		case "a":
+			if (!keys[1]) {
+				keys[1] = -1;
+				zoom(1);
+			}
+			break;
+		case "s":
+			if (!keys[1]) {
+				keys[1] = 1;
+				zoom(1);
+			}
+			break;
+		}
+	});
+	window.addEventListener("keyup", function(event) {
+		switch (event.key) {
+		case "q":
+		case "w":
+			keys[0] = 0;
+			break;
+		case "a":
+		case "s":
+			keys[1] = 0;
+			break;
+		}
+	});
+
+	function zoom(i) {
+		if (keys[i] > 0 && assets[i].la > 0 || keys[i] < 0 && assets[i].la < assets[i].st) {
+			assets[i].la -= keys[i];
+			prepData(assets[i]);
+			setTimeout(zoom, 100, i);
+		}
 	}
 });
 </script>
