@@ -43,12 +43,13 @@ google.charts.setOnLoadCallback(function() {
 		assets[i].st=9999;
 		assets[i].as=[];
 		for (var j=0; j < assets[i].sy.length; ++j) {
-			getData(assets[i], j);
+			getData(i, j);
 		}
 	}
 
 	var startDate;
-	function getData(asset, index) {
+	function getData(index, symbol) {
+		var asset = assets[index];
 		var request = new XMLHttpRequest();
 		request.onload = function() {
 			var prevDate, rows = [];
@@ -64,25 +65,26 @@ google.charts.setOnLoadCallback(function() {
 			}
 			if (rows.length > 0) {
 				asset.n++;
-				asset.as[index] = rows;
+				asset.as[symbol] = rows;
 				if (asset.st > rows.length-1) {
 					asset.st = rows.length-1;
-					asset.i = index;
+					asset.i = symbol;
 				}
 			}
-			console.log(asset.sy[index] + " " + rows.length);
+			console.log(asset.sy[symbol] + " " + rows.length);
 
 			asset.l++;
 			if (asset.l == asset.sy.length && asset.n > 0) {
 				asset.la = asset.st;
-				prepData(asset, true);
+				prepData(index, true);
 			}
 		};
-		request.open("get", "query?function=" + asset.fu + "&symbol=" + asset.sy[index] + asset.ma + "&market=USD&apikey=" + (params["apikey"]||btoa(Math.random()).slice(0,16).toUpperCase()));
+		request.open("get", "query?function=" + asset.fu + "&symbol=" + asset.sy[symbol] + asset.ma + "&market=USD&apikey=" + (params["apikey"]||btoa(Math.random()).slice(0,16).toUpperCase()));
 		request.send();
 	}
 
-	function prepData(asset, versus, dy) {
+	function prepData(index, versus, dy) {
+		var asset = assets[index];
 		for (var i=0; i < asset.l; ++i) {
 			while (asset.as[i] && dy > 0 && asset.la > 0 && new Date(asset.as[i][asset.la][0]) < startDate) {
 				asset.la -= dy;
@@ -129,7 +131,7 @@ google.charts.setOnLoadCallback(function() {
 		}
 		logs.length > 0 && console.error(logs);
 
-		asset.ch = drawChart(array, asset.ti, asset.ch);
+		asset.ch = drawChart(index, array, asset.ti, asset.ch);
 
 		if (versus && assets[0].l == assets[0].sy.length && assets[1].l == assets[1].sy.length && assets[0].n > 0 && assets[1].n > 0) {
 			prepVersus();
@@ -163,14 +165,17 @@ google.charts.setOnLoadCallback(function() {
 		}
 		logs.length > 0 && console.error(logs);
 
-		versusChart = drawChart(array, header[1] + " vs " + header[2], versusChart);
+		versusChart = drawChart(2, array, header[1] + " vs " + header[2], versusChart);
 	}
 
-	function drawChart(array, title, chart) {
+	function drawChart(index, array, title, chart) {
 		if (!chart) {
 			var div = document.createElement("div");
 			document.body.appendChild(div);
 			chart = new google.visualization.LineChart(div);
+			if (index < 2) div.addEventListener("wheel", function(event) {
+				wheel(event, index);
+			});
 		}
 
 		chart.draw(google.visualization.arrayToDataTable(array), {
@@ -180,6 +185,20 @@ google.charts.setOnLoadCallback(function() {
 		});
 
 		return chart;
+	}
+
+	function wheel(event, i) {
+		if (event.deltaY > 0) {
+			var dy = 1;
+		} else if (event.deltaY < 0) {
+			var dy = -1;
+		}
+
+		if (assets[i].n > 0 && (dy > 0 && assets[i].la > 0 || dy < 0 && assets[i].la < assets[i].st)) {
+			assets[i].la -= dy;
+			prepData(i);
+			event.preventDefault();
+		}
 	}
 
 	keys=[0,0];
@@ -214,7 +233,7 @@ google.charts.setOnLoadCallback(function() {
 		function zoom(i) {
 			if (assets[i].n > 0 && (keys[i] > 0 && assets[i].la > 0 || keys[i] < 0 && assets[i].la < assets[i].st)) {
 				assets[i].la -= keys[i];
-				prepData(assets[i]);
+				prepData(i);
 				setTimeout(zoom, 100, i);
 			}
 		}
@@ -236,7 +255,7 @@ google.charts.setOnLoadCallback(function() {
 			if (assets[0].n > 0 && assets[1].n > 0) {
 				var asset = assets[i];
 				startDate = new Date(asset.as[asset.i][asset.la][0]);
-				prepData(assets[1-i], true, keys[i]);
+				prepData(1-i, true, keys[i]);
 			}
 			keys[i] = 0;
 		}
