@@ -78,7 +78,7 @@ google.charts.setOnLoadCallback(function() {
 				prepData(index, true);
 			}
 		};
-		request.open("get", "https://www.alphavantage.co/query?function=" + asset.fu + "&symbol=" + asset.sy[index] + asset.ma + "&market=USD&apikey=" + (params["apikey"]||btoa(Math.random()).slice(0,16).toUpperCase()));
+		request.open("get", "https://www.alphavantage.co/query?function=" + asset.fu + "&symbol=" + asset.sy[symbol] + asset.ma + "&market=USD&apikey=" + (params["apikey"]||btoa(Math.random()).slice(0,16).toUpperCase()));
 		request.send();
 	}
 
