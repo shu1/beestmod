@@ -9,7 +9,6 @@
 <script>
 google.charts.load("current", {"packages":["corechart"]});
 google.charts.setOnLoadCallback(function() {
-	var startDate;
 	var assets = [{
 		sy: ["FB","AAPL","AMZN","NFLX","GOOG"],
 		fu: "TIME_SERIES_DAILY_ADJUSTED",
@@ -38,18 +37,21 @@ google.charts.setOnLoadCallback(function() {
 	}
 
 	for (var i=0; i < assets.length; ++i) {
-		assets[i].l=0;
-		assets[i].c=-1;
-		assets[i].as=[];
+		assets[i].l = 0;
+		assets[i].n = 0;
+		assets[i].s = -1;
+		assets[i].en = 9999;
+		assets[i].rs = [];
 		for (var j=0; j < assets[i].sy.length; ++j) {
-			getData(assets[i], j);
+			getData(i, j);
 		}
 	}
 
-	function getData(asset, index) {
-		var request = new XMLHttpRequest();
+	var startDate;
+	function getData(index, symbol) {
+		var asset = assets[index], request = new XMLHttpRequest();
 		request.onload = function() {
-			var prevDate, rows = [];
+			var prevDate, rows=[];
 			var series = JSON.parse(this.response)[asset.k1];
 			for (var i in series) {
 				var date = new Date(i);
@@ -59,122 +61,184 @@ google.charts.setOnLoadCallback(function() {
 			}
 			if (prevDate && (!startDate || startDate <= prevDate)) {
 				startDate = prevDate;
-				asset.c = index;
 			}
-			asset.as[index] = rows;
-			console.log(asset.sy[index] + " data: " + rows.length);
+			if (rows.length > 0) {
+				asset.rs[symbol] = rows;
+				asset.n++;
+				if (asset.en > rows.length-1) {
+					asset.en = rows.length-1;
+					asset.s = symbol;
+				}
+			}
+			console.log(asset.sy[symbol] + " " + rows.length);
 
 			asset.l++;
-			if (asset.l == asset.sy.length && asset.c >= 0) {
-				prepData(asset);
+			if (asset.l == asset.sy.length && asset.n) {
+				asset.st = asset.en;
+				prepData(index, true);
 			}
 		};
-		request.open("get", "https://www.alphavantage.co/query?function=" + asset.fu + "&symbol=" + asset.sy[index] + asset.ma + "&apikey=" + (params["apikey"]||btoa(Math.random()).slice(0,16).toUpperCase()));
+		request.open("get", "https://www.alphavantage.co/query?function=" + asset.fu + "&symbol=" + asset.sy[index] + asset.ma + "&market=USD&apikey=" + (params["apikey"]||btoa(Math.random()).slice(0,16).toUpperCase()));
 		request.send();
 	}
 
-	function prepData(asset) {
-		var last = asset.as[asset.c].length-1;
+	function prepData(index, versus) {
+		var asset = assets[index], rows = asset.rs, s = asset.s;
+		var prices=[], header = ["Date"];
+		asset.ti = "";
 		for (var i=0; i < asset.l; ++i) {
-			if (asset.as[i].length > 0) {
-				if (last > asset.as[i].length-1) {
-					last = asset.as[i].length-1;
-					asset.c = i;
-				}
-				while (last > 0 && new Date(asset.as[i][last][0]) < startDate) {
-					--last;
-					asset.c = i;
-				}
-			}
-		}
-
-		var num=0, prices=[], shares=[];
-		var header = ["Date"];
-		asset.ac = "";
-		for (var i=0; i < asset.l; ++i) {
-			if (asset.as[i].length > 0) {
+			if (rows[i]) {
 				header.push(asset.sy[i]);
-				asset.ac += asset.sy[i].slice(0,1);
-				prices[i] = asset.as[i][last][1];
-				shares[i] = 1 / prices[i];
-				++num;
+				asset.ti += asset.sy[i].slice(0,1);
+				prices[i] = rows[i][asset.st][1];
 			}
 		}
 
-		if (num == 1) {
-			asset.ac = asset.sy[asset.c];
+		if (asset.n == 1) {
+			asset.ti = asset.sy[s];
 		}
-		else if (asset.ac == "BBEEXXD") {
-			asset.ac = "BEEStMoD";
+		else if (asset.ti == "BBEEXXD") {
+			asset.ti = "BEEStMoD";
 		}
 
-		asset.ar = [];
-		var array = [header];
-		for (var j = last; j >= 0; --j) {
-			var sum=0, row = [asset.as[asset.c][j][0]];
-			for (var i=0; i < asset.as.length; ++i) {
-				if (asset.as[i].length > 0) {
-					var price = asset.as[i][j][1];
-					sum += price * shares[i];
-					row.push(((price / prices[i]) - 1) * 100);
-					if (asset.as[i][j][0] != asset.as[asset.c][j][0]) {
-						console.error(asset.sy[asset.c] + " " + asset.as[asset.c][j][0] + " " + asset.sy[i] + " " + asset.as[i][j][0]);
+		var array = [header], logs=[];
+		for (var j = asset.st; j >= 0; --j) {
+			var row = [rows[s][j][0]];
+			for (var i=0; i < rows.length; ++i) {
+				if (rows[i]) {
+					row.push(((rows[i][j][1] / prices[i]) - 1) * 100);
+					if (rows[i][j][0] != rows[s][j][0]) {
+						logs.push(asset.sy[s] + " " + rows[s][j][0] + " " + asset.sy[i] + " " + rows[i][j][0]);
 					}
 				}
 			}
-			asset.ar.push([asset.as[asset.c][j][0], ((sum / num) - 1) * 100]);
 			array.push(row);
 		}
+		if (logs.length > 0) console.error(logs);
 
-		drawChart(array, asset.ac);
+		asset.ch = drawChart(array, asset.ti, asset.ch, index);
 
-		if (assets[0].l == assets[0].sy.length && assets[1].l == assets[1].sy.length) {
-			prepComparison();
+		if (versus && assets[0].ti && assets[1].ti) {
+			versusStart = assets[0].st;
+			prepVersus();
 		}
 	}
 
-	function prepComparison() {
-		var header = ["Date"];
-		for (var i=0; i < assets.length; ++i) {
-			if (assets[i].ac) {
-				header.push(assets[i].ac);
+	function prepArray(index, start) {
+		var asset = assets[index], rows = asset.rs, s = asset.s;
+		var shares=[];
+		for (var i = rows.length-1; i >= 0; --i) {
+			if (rows[i]) {
+				shares[i] = 1 / rows[i][start][1];
 			}
 		}
 
-		var timeout=2000, array = [header];
-		while (--timeout > 0 && assets[0].ar.length && assets[1].ar.length) {
-			if (assets[0].ar[0][0] == assets[1].ar[0][0]) {
-				array.push([assets[0].ar[0][0], assets[0].ar[0][1], assets[1].ar[0][1]]);
-				assets[0].ar.shift();
-				assets[1].ar.shift();
+		var array=[], logs=[];
+		for (var j = start; j >= 0; --j) {
+			var sum=0;
+			for (var i=0; i < rows.length; ++i) {
+				if (rows[i]) {
+					sum += rows[i][j][1] * shares[i];
+					if (rows[i][j][0] != rows[s][j][0]) {
+						logs.push(asset.sy[s] + " " + rows[s][j][0] + " " + asset.sy[i] + " " + rows[i][j][0]);
+					}
+				}
 			}
-			else if (new Date(assets[0].ar[0][0]) < new Date(assets[1].ar[0][0])) {
-				assets[0].ar.shift();
+			array.push([rows[s][j][0], ((sum / asset.n) - 1) * 100]);
+		}
+		if (logs.length > 0) console.error(logs);
+
+		return array;
+	}
+
+	var versusStart, versusChart;
+	function prepVersus() {
+		var date = new Date(assets[0].rs[assets[0].s][versusStart][0]);
+		var start = assets[1].en;
+		while (start > 0 && new Date(assets[1].rs[assets[1].s][start][0]) < date) {
+			--start;
+		}
+
+		var array0 = prepArray(0, versusStart);
+		var array1 = prepArray(1, start);
+
+		var timeout=2000, i=0, j=0, array = [["Date", assets[0].ti, assets[1].ti]], logs=[];
+		while (timeout-- > 0 && i < array0.length && j < array1.length) {
+			if (array0[i][0] == array1[j][0]) {
+				array.push([array0[i][0], array0[i][1], array1[j][1]]);
+				++i, ++j;
 			}
-			else if (new Date(assets[0].ar[0][0]) > new Date(assets[1].ar[0][0])) {
-				assets[1].ar.shift();
+			else if (new Date(array0[i][0]) < new Date(array1[j][0])) {
+				++i;
+			}
+			else if (new Date(array0[i][0]) > new Date(array1[j][0])) {
+				++j;
 			}
 			else {
-				console.error(assets[0].ar[0][0] + " " + assets[1].ar[0][0]);
+				logs.push(array0[i][0] + " " + assets[1].ar[j][0]);
 			}
 		}
+		if (logs.length > 0) console.error(logs);
 
-		drawChart(array, header[1] + " vs " + header[2]);
+		versusChart = drawChart(array, assets[0].ti + " vs " + assets[1].ti, versusChart, 2);
 	}
 
-	function drawChart(array, title) {
-		var div = document.createElement("div");
-		document.body.appendChild(div);
+	function drawChart(array, title, chart, i) {
+		if (!chart) {
+			var div = document.createElement("div");
+			div.tabIndex = i;
+			div.style.outline = "none";
+			document.body.appendChild(div);
+			chart = new google.visualization.LineChart(div);
 
-		var chart = new google.visualization.LineChart(div);
+			div.addEventListener("wheel", function(event) {
+				var dy = event.deltaY > 0 ? 1 : -1;
+				if (i < 2 && (dy > 0 && assets[i].st > 0 || dy < 0 && assets[i].st < assets[i].en)) {
+					assets[i].st -= dy;
+					prepData(i);
+				}
+				else if (i == 2 && (dy > 0 && versusStart > 0 || dy < 0 && versusStart < assets[0].en)) {
+					versusStart -= dy;
+					prepVersus();
+				}
+				event.preventDefault();
+			})
+
+			div.addEventListener("keyup", function(event) {
+				switch (event.key) {
+				case "ArrowRight":
+					if (i < 2 && assets[i].st > 0) {
+						assets[i].st--;
+						prepData(i);
+					}
+					else if (i == 2 && versusStart > 0) {
+						--versusStart;
+						prepVersus();
+					}
+					break;
+				case "ArrowLeft":
+					if (i < 2 && assets[i].st < assets[i].en) {
+						assets[i].st++;
+						prepData(i);
+					}
+					else if (i == 2 && versusStart < assets[0].en) {
+						++versusStart;
+						prepVersus();
+					}
+					break;
+				}
+			})
+		}
+
 		chart.draw(google.visualization.arrayToDataTable(array), {
 			title: title,
-			width:980,
+			width:1080,
 			height:540
-		});
+		})
+		return chart;
 	}
-});
+})
 </script>
 </head>
-<body style="width:980px;margin-left:auto;margin-right:auto"></body>
+<body style="width:1080px;margin-left:auto;margin-right:auto"></body>
 </html>
