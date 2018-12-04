@@ -233,15 +233,16 @@ google.charts.setOnLoadCallback(function() {
 			})
 		}
 
-		chart.draw(new google.visualization.DataTable({cols: cols, rows: rows}), {
-			title: title,
-			width: 1080,
+		chart.draw(new google.visualization.DataTable({cols:cols, rows:rows}), {
+			chartArea: {left:60, top:5, width:'100%', height:'85%'},
+			legend: {position:'in'},
+			width: 980,
 			height: 540
-		})
+		});
 		return chart;
 	}
 })
 </script>
 </head>
-<body style="width:1080px; margin-left:auto; margin-right:auto"></body>
+<body style="width:980px; margin-left:auto; margin-right:auto"></body>
 </html>
