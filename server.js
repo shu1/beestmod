@@ -44,7 +44,11 @@ function get(f, s, res) {
 }
 
 app.get("/", function(req, res) {
-	res.sendFile(__dirname + "/index.html");
+	if (!Object.keys(req.query).length) {
+		res.redirect("/?stocks=FB,AAPL,AMZN,NFLX,GOOG&crypto=BTC,BCH,ETH,EOS,XLM,XMR,DASH&date=2018-08-13");
+	} else {
+		res.sendFile(__dirname + "/index.html");
+	}
 });
 
 app.get("/all", function(req, res) {
