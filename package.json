@@ -2,9 +2,9 @@
 	"name": "beestmod",
 	"version": "1.0.0",
 	"description": "FAANG vs BEEStMoD",
-	"main": "index.js",
+	"main": "server.js",
 	"scripts": {
-		"start": "node index.js"
+		"start": "node server.js"
 	},
 	"dependencies": {
 		"express": "^4.16.4",
