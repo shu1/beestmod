@@ -73,6 +73,20 @@ google.charts.setOnLoadCallback(function() {
 			asset.l++;
 			if (asset.l == asset.sy.length && asset.n) {
 				asset.st = asset.en;
+				asset.ti = "";
+				asset.cols = [{label:' ', type:'string'}];
+				for (var i=0; i < asset.da.length; ++i) {
+					if (asset.da[i]) {
+						asset.ti += asset.sy[i].slice(0,1);
+						asset.cols.push({label:asset.sy[i], type:'number'});
+					}
+				}
+				if (asset.n == 1) {
+					asset.ti = asset.sy[s];
+				}
+				else if (asset.ti == "BBEEXXD") {
+					asset.ti = "BEEStMoD";
+				}
 				prepData(index, true);
 			}
 		}
@@ -82,25 +96,15 @@ google.charts.setOnLoadCallback(function() {
 
 	function prepData(index, versus) {
 		var asset = assets[index], data = asset.da, s = asset.s;
-		var prices=[], cols = [{id:'date', label:' ', type:'string'}];
-		asset.ti = "";
-		for (var i=0; i < data.length; ++i) {
+		var prices=[];
+		for (var i = data.length-1; i>=0 ; --i) {
 			if (data[i]) {
-				cols.push({id:asset.sy[i], label:asset.sy[i], type:'number'});
-				asset.ti += asset.sy[i].slice(0,1);
 				prices[i] = data[i][asset.st][1];
 			}
 		}
 
-		if (asset.n == 1) {
-			asset.ti = asset.sy[s];
-		}
-		else if (asset.ti == "BBEEXXD") {
-			asset.ti = "BEEStMoD";
-		}
-
 		var rows=[], logs=[];
-		for (var j = asset.st; j >= 0; --j) {
+		for (var j = asset.st; j>=0; --j) {
 			var row = [{v: data[s][j][0]}];
 			for (var i=0; i < data.length; ++i) {
 				if (data[i]) {
@@ -114,10 +118,15 @@ google.charts.setOnLoadCallback(function() {
 		}
 		if (logs.length > 0) console.error(logs);
 
-		asset.ch = drawChart(cols, rows, asset.ti, asset.ch, index);
+		asset.ch = drawChart(asset.cols, rows, asset.ti, asset.ch, index);
 
 		if (versus && assets[0].ti && assets[1].ti) {
 			versusStart = assets[0].st;
+			versusCols = [
+				{id:'date',	label:' ', type:'string'},
+				{id:assets[0].ti, label:assets[0].ti, type:'number'},
+				{id:assets[1].ti, label:assets[1].ti, type:'number'}
+			];
 			prepVersus();
 		}
 	}
@@ -125,14 +134,14 @@ google.charts.setOnLoadCallback(function() {
 	function prepArray(index, start) {
 		var asset = assets[index], data = asset.da, s = asset.s;
 		var shares=[];
-		for (var i = data.length-1; i >= 0; --i) {
+		for (var i = data.length-1; i>=0; --i) {
 			if (data[i]) {
 				shares[i] = 1 / data[i][start][1];
 			}
 		}
 
 		var array=[], logs=[];
-		for (var j = start; j >= 0; --j) {
+		for (var j = start; j>=0; --j) {
 			var sum=0;
 			for (var i=0; i < data.length; ++i) {
 				if (data[i]) {
@@ -149,7 +158,7 @@ google.charts.setOnLoadCallback(function() {
 		return array;
 	}
 
-	var versusStart, versusChart;
+	var versusStart, versusCols, versusChart;
 	function prepVersus() {
 		var date = new Date(assets[0].da[assets[0].s][versusStart][0]);
 		var start = assets[1].en;
@@ -159,11 +168,6 @@ google.charts.setOnLoadCallback(function() {
 
 		var array0 = prepArray(0, versusStart);
 		var array1 = prepArray(1, start);
-		var cols = [
-			{id:'date',	label:' ', type:'string'},
-			{id:assets[0].ti, label:assets[0].ti, type:'number'},
-			{id:assets[1].ti, label:assets[1].ti, type:'number'}
-		];
 
 		var timeout=9999, i=0, j=0, rows=[], logs=[];
 		while (timeout-- > 0 && i < array0.length && j < array1.length) {
@@ -183,7 +187,7 @@ google.charts.setOnLoadCallback(function() {
 		}
 		if (logs.length > 0) console.error(logs);
 
-		versusChart = drawChart(cols, rows, assets[0].ti + " vs " + assets[1].ti, versusChart, 2);
+		versusChart = drawChart(versusCols, rows, assets[0].ti + " vs " + assets[1].ti, versusChart, 2);
 	}
 
 	function drawChart(cols, rows, title, chart, i) {
