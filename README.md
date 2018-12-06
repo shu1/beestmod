@@ -8,4 +8,4 @@ Set url parameters **stocks**, **crypto**, and **date**.  Currently stock data o
 
 You can also adjust the start dates of each chart with your mouse **scroll wheel**, or click on a chart and then tap your left/right **arrow keys**.  **Hover** over each line to see details on data points, and **click** on a label to highlight that line.
 
-**[Give it a try](https://beestmod.herokuapp.com/?stocks=FB,AAPL,AMZN,NFLX,GOOG&crypto=BTC,BCH,ETH,EOS,XLM,XMR,DASH&date=2018-08-13)**, you can view on mobile too.
+**[Give it a try](https://beestmod.herokuapp.com/?stocks=FB,AAPL,AMZN,NFLX,GOOG&crypto=BTC,BCH,ETH,EOS,XLM,XMR,DASH&date=2018-08-13)**, viewable on mobile too.
