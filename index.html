@@ -3,9 +3,9 @@
 <html>
 <head>
 <title>FAANG vs BEEStMoD</title>
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-7050108-4"></script>
+<script async src="//www.googletagmanager.com/gtag/js?id=UA-7050108-4"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','UA-7050108-4')</script>
-<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="//www.gstatic.com/charts/loader.js"></script>
 <script>
 google.charts.load('current', {'packages':['corechart']});
 google.charts.setOnLoadCallback(function() {
@@ -82,7 +82,7 @@ google.charts.setOnLoadCallback(function() {
 					}
 				}
 				if (asset.n == 1) {
-					asset.ti = asset.sy[s];
+					asset.ti = asset.sy[asset.s];
 				}
 				else if (asset.ti == "BBEEXXD") {
 					asset.ti = "BEEStMoD";
@@ -195,7 +195,7 @@ google.charts.setOnLoadCallback(function() {
 			var div = document.createElement('div');
 			div.tabIndex = i;
 			div.style.outline = 'none';
-			document.body.appendChild(div);
+			charts.appendChild(div);
 			chart = new google.visualization.LineChart(div);
 
 			div.addEventListener('wheel', function(event) {
@@ -248,5 +248,8 @@ google.charts.setOnLoadCallback(function() {
 })
 </script>
 </head>
-<body style="width:980px; margin-left:auto; margin-right:auto"></body>
+<body style="width:980px; margin-left:auto; margin-right:auto">
+	<div id="charts"></div>
+	Developed by <a href="//github.com/shu1" target="_blank">Shuichi Aizawa</a>. Inspired by <a href="//medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">Omid Malekan</a>.
+</body>
 </html>
