@@ -3,19 +3,20 @@
 <html>
 <head>
 <title>FAANG vs BEEStMoD</title>
-<script async src="//www.googletagmanager.com/gtag/js?id=UA-7050108-4"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-7050108-4"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','UA-7050108-4')</script>
-<script src="//www.gstatic.com/charts/loader.js"></script>
+<script src="https://www.gstatic.com/charts/loader.js"></script>
 <script>
+'use strict';
 google.charts.load('current', {'packages':['corechart']});
 google.charts.setOnLoadCallback(function() {
 	var assets = [{
-		sy: ["FB","AAPL","AMZN","NFLX","GOOG"],
+		sy: ['FB','AAPL','AMZN','NFLX','GOOG'],
 		fu: "TIME_SERIES_DAILY_ADJUSTED",
 		k1: "Time Series (Daily)",
 		k2: "5. adjusted close"
 	},{
-		sy: ["BTC","BCH","ETH","EOS","XLM","XMR","DASH"],
+		sy: ['BTC','BCH','ETH','EOS','XLM','XMR','DASH'],
 		fu: "DIGITAL_CURRENCY_DAILY",
 		k1: "Time Series (Digital Currency Daily)",
 		k2: "4b. close (USD)"
@@ -51,18 +52,21 @@ google.charts.setOnLoadCallback(function() {
 		request.onload = function() {
 			var prevDate, data=[];
 			var series = JSON.parse(this.response)[asset.k1];
-			for (var i in series) {
-				var date = new Date(i);
-				if (startDate && startDate > date) break;
-				data.push([i, parseFloat(series[i][asset.k2])]);
-				prevDate = date;
-			}
-			if (prevDate && (!startDate || startDate <= prevDate)) {
-				startDate = prevDate;
-			}
-			if (data.length > 0) {
-				asset.da[symbol] = data;
+			if (series) {
 				asset.n++;
+				if (asset.sy[symbol] == 'XLM' && (!startDate || startDate < new Date('2017-01-26'))) {
+					startDate = new Date('2017-01-26');
+				}
+				for (var i in series) {
+					var date = new Date(i);
+					if (startDate && startDate > date) break;
+					data.push([i, parseFloat(series[i][asset.k2])]);
+					prevDate = date;
+				}
+				if (prevDate && (!startDate || startDate <= prevDate)) {
+					startDate = prevDate;
+				}
+				asset.da[symbol] = data;
 				if (asset.en > data.length-1) {
 					asset.en = data.length-1;
 					asset.s = symbol;
@@ -89,8 +93,8 @@ google.charts.setOnLoadCallback(function() {
 				}
 				prepData(index, true);
 			}
-		};
-		request.open('get', "https://www.alphavantage.co/query?function=" + asset.fu + "&symbol=" + asset.sy[symbol] + "&market=USD&apikey=" + (params["apikey"]||btoa(Math.random()).slice(0,16).toUpperCase()));
+		}
+		request.open('get', "https://www.alphavantage.co/query?function=" + asset.fu + "&symbol=" + asset.sy[symbol] + "&market=USD&outputsize=full&apikey=" + (params["apikey"]||btoa(Math.random()).slice(0,16).toUpperCase()));
 		request.send();
 	}
 
@@ -170,16 +174,16 @@ google.charts.setOnLoadCallback(function() {
 		var array1 = prepArray(1, start);
 
 		var timeout=9999, i=0, j=0, rows=[], logs=[];
-		while (timeout-- > 0 && i < array0.length && j < array1.length) {
+		while (--timeout > 0 && i < array0.length && j < array1.length) {
 			if (array0[i][0] == array1[j][0]) {
 				rows.push({c:[{v:array0[i][0]}, {v:array0[i][1]}, {v:array1[j][1]}]});
 				++i, ++j;
 			}
-			else if (new Date(array0[i][0]) < new Date(array1[j][0])) {
-				++i;
-			}
 			else if (new Date(array0[i][0]) > new Date(array1[j][0])) {
 				++j;
+			}
+			else if (new Date(array0[i][0]) < new Date(array1[j][0])) {
+				++i;
 			}
 			else {
 				logs.push(array0[i][0] + " " + array1[j][0]);
@@ -242,7 +246,7 @@ google.charts.setOnLoadCallback(function() {
 			legend: {position:'in'},
 			width: 980,
 			height: 540
-		});
+		})
 		return chart;
 	}
 })
@@ -250,6 +254,6 @@ google.charts.setOnLoadCallback(function() {
 </head>
 <body style="width:980px; margin-left:auto; margin-right:auto">
 	<div id="charts"></div>
-	Developed by <a href="//github.com/shu1" target="_blank">Shuichi Aizawa</a>. Inspired by <a href="//medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">Omid Malekan</a>.
+	Developed by <a href="https://github.com/shu1" target="_blank">Shuichi Aizawa</a>. Inspired by <a href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">Omid Malekan</a>.
 </body>
 </html>
