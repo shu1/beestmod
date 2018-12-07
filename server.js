@@ -1,20 +1,20 @@
 // Shuichi Aizawa 2018 github.com/shu1
-"use strict";
+'use strict';
 
-var https = require("https");
-var express = require("express");
+var https = require('https');
+var express = require('express');
 var app = express();
-var {Pool} = require("pg");
+var {Pool} = require('pg');
 var pool = new Pool({connectionString:process.env.DATABASE_URL, ssl:true});
 
 pool.query("CREATE TABLE alphavantage(datetime TIMESTAMPTZ NOT NULL, function TEXT NOT NULL, symbol TEXT NOT NULL, data TEXT NOT NULL, PRIMARY KEY (function, symbol))", function(err, result) {
 	if (err) {
 		console.log(err);
 	} else {
-		console.error("TABLE CREATED");
-		init("TIME_SERIES_DAILY_ADJUSTED", ["FB","AAPL","AMZN","NFLX","GOOG"]);
-		setTimeout(init, 65000,  "DIGITAL_CURRENCY_DAILY", ["BTC","BCH","ETH","EOS","XLM"]);
-		setTimeout(init, 130000, "DIGITAL_CURRENCY_DAILY", ["XMR","DASH"]);
+		console.error("table created");
+		init('TIME_SERIES_DAILY_ADJUSTED', ['FB','AAPL','AMZN','NFLX','GOOG']);
+		setTimeout(init, 65000,  'DIGITAL_CURRENCY_DAILY', ['BTC','BCH','ETH','EOS','XLM']);
+		setTimeout(init, 130000, 'DIGITAL_CURRENCY_DAILY', ['XMR','DASH','LTC','AMD','MSFT']);
 	}
 });
 
@@ -25,12 +25,12 @@ function init(f, s) {
 }
 
 function get(f, s, res) {
-	https.get("https://www.alphavantage.co/query?function=" + f + "&symbol=" + s + "&market=USD&apikey=" + process.env.apikey, function(response) {
+	https.get("https://www.alphavantage.co/query?function=" + f + "&symbol=" + s + "&market=USD&outputsize=full&apikey=" + process.env.apikey, function(response) {
 		var data = "";
-		response.on("data", function(chunk) {data += chunk});
-		response.on("end", function() {
+		response.on('data', function(chunk) {data += chunk});
+		response.on('end', function() {
 			var parsed = JSON.parse(data);
-			if (parsed["Meta Data"]) {
+			if (parsed['Meta Data']) {
 				console.log(s + " insert");
 				pool.query("INSERT INTO alphavantage(datetime, function, symbol, data) VALUES(NOW(), $1, $2, $3) ON CONFLICT(function, symbol) DO UPDATE SET datetime = NOW(), data = $3", [f,s,data], function(err, result) {
 					err && console.error(err);
@@ -43,7 +43,7 @@ function get(f, s, res) {
 	});
 }
 
-app.get("/", function(req, res) {
+app.get('/', function(req, res) {
 	if (!Object.keys(req.query).length) {
 		res.redirect("/?stocks=FB,AAPL,AMZN,NFLX,GOOG&crypto=BTC,BCH,ETH,EOS,XLM,XMR,DASH&date=2018-08-13");
 	} else {
@@ -51,7 +51,7 @@ app.get("/", function(req, res) {
 	}
 });
 
-app.get("/all", function(req, res) {
+app.get('/all', function(req, res) {
 	pool.query("SELECT symbol, datetime FROM alphavantage ORDER BY datetime", function(err, result) {
 		if (err) {
 			res.send(err);
@@ -61,16 +61,16 @@ app.get("/all", function(req, res) {
 	});
 });
 
-app.get("/crons", function(req, res) {
+app.get('/crons', function(req, res) {
 	var date = new Date();
 	date.setHours(0,3,0);
-	cron("TIME_SERIES_DAILY_ADJUSTED", date, 10000000, res);
+	cron('TIME_SERIES_DAILY_ADJUSTED', date, 10000000, res);
 });
 
-app.get("/cronc", function(req, res) {
+app.get('/cronc', function(req, res) {
 	var date = new Date();
 	date.setHours(1,33,0);
-	cron("DIGITAL_CURRENCY_DAILY", date, 10000000, res);
+	cron('DIGITAL_CURRENCY_DAILY', date, 10000000, res);
 });
 
 function cron(f, time, prev, res) {
@@ -92,7 +92,7 @@ function cron(f, time, prev, res) {
 	});
 }
 
-app.get("/query", function(req, res) {
+app.get('/query', function(req, res) {
 	pool.query("SELECT data FROM alphavantage WHERE function = $1 AND symbol = $2", [req.query.function, req.query.symbol], function(err, result) {
 		if (err) {
 			console.error(err);
