@@ -14,12 +14,12 @@ pool.query("CREATE TABLE alphavantage(datetime TIMESTAMPTZ NOT NULL, function TE
 		console.error("table created");
 		init('TIME_SERIES_DAILY_ADJUSTED', ['FB','AAPL','AMZN','NFLX','GOOG']);
 		setTimeout(init, 65000,  'DIGITAL_CURRENCY_DAILY', ['BTC','BCH','ETH','EOS','XLM']);
-		setTimeout(init, 130000, 'DIGITAL_CURRENCY_DAILY', ['XMR','DASH','LTC','AMD','MSFT']);
+		setTimeout(init, 130000, 'DIGITAL_CURRENCY_DAILY', ['XMR','DASH','LTC', 'XRP', 'USDT']);
 	}
 });
 
 function init(f, s) {
-	for (var i=0; i<5 && i<s.length; ++i) {
+	for (var i=0; i<s.length; ++i) {
 		get(f, s[i]);
 	}
 }
