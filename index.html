@@ -91,6 +91,7 @@ google.charts.setOnLoadCallback(function() {
 				else if (asset.ti == "BBEEXXD") {
 					asset.ti = "BEEStMoD";
 				}
+				document.title = asset.ti;
 				prepData(index, true);
 			}
 		}
@@ -122,7 +123,7 @@ google.charts.setOnLoadCallback(function() {
 		}
 		if (logs.length > 0) console.error(logs);
 
-		asset.ch = drawChart(asset.cols, rows, asset.ti, asset.ch, index);
+		asset.ch = drawChart(asset.cols, rows, asset.ch, index);
 
 		if (versus && assets[0].ti && assets[1].ti) {
 			versusStart = assets[0].st;
@@ -131,6 +132,7 @@ google.charts.setOnLoadCallback(function() {
 				{id:assets[0].ti, label:assets[0].ti, type:'number'},
 				{id:assets[1].ti, label:assets[1].ti, type:'number'}
 			];
+			document.title = assets[0].ti + " vs " + assets[1].ti;
 			prepVersus();
 		}
 	}
@@ -191,10 +193,10 @@ google.charts.setOnLoadCallback(function() {
 		}
 		if (logs.length > 0) console.error(logs);
 
-		versusChart = drawChart(versusCols, rows, assets[0].ti + " vs " + assets[1].ti, versusChart, 2);
+		versusChart = drawChart(versusCols, rows, versusChart, 2);
 	}
 
-	function drawChart(cols, rows, title, chart, i) {
+	function drawChart(cols, rows, chart, i) {
 		if (!chart) {
 			var div = document.createElement('div');
 			div.tabIndex = i;
