@@ -1,6 +1,6 @@
 [FAANG vs BEEStMoD](https://beestmod.herokuapp.com/?stocks=FB,AAPL,AMZN,NFLX,GOOG&crypto=BTC,BCH,ETH,EOS,XLM,XMR,DASH&date=2018-08-13)
 ===
-Inspired by [The Case for Selling FAANG and Buying BEEStMoD](https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef "Omid Malekan") to make concrete comparisons between investments in stocks and cryptocurrencies.  The charts show how stocks and crypto perform over time, given equal investments on a start date.  The data is updated once per day at midnight UTC (7pm EST).
+Inspired by [The Case for Selling FAANG and Buying BEEStMoD](https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef "Omid Malekan") to make concrete comparisons between investments in stocks and cryptocurrencies.  Charts show how the stocks and crypto performed over time, given equal investments on a start date.  The 3rd chart shows the aggregate of all the stocks vs the aggregate of all the crypto.
 
 Usage
 ---
