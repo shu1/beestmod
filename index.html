@@ -198,10 +198,7 @@ google.charts.setOnLoadCallback(function() {
 
 	function drawChart(cols, rows, chart, i) {
 		if (!chart) {
-			var div = document.createElement('div');
-			div.tabIndex = i;
-			div.style.outline = 'none';
-			charts.appendChild(div);
+			var div = document.getElementById("chart"+i);
 			chart = new google.visualization.LineChart(div);
 
 			div.addEventListener('wheel', function(event) {
@@ -255,7 +252,9 @@ google.charts.setOnLoadCallback(function() {
 </script>
 </head>
 <body style="width:980px; margin-left:auto; margin-right:auto; font-family:sans-serif; font-size:20">
-	<div id="charts"></div>
+	<div id="chart0" tabindex="0" style="outline:none"></div>
+	<div id="chart1" tabindex="0" style="outline:none"></div>
+	<div id="chart2" tabindex="0" style="outline:none"></div>
 	<div>&nbsp;Developed by <a href="https://github.com/shu1" target="_blank">Shuichi Aizawa</a>. Inspired by <a href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">Omid Malekan</a>.</div>
 	<div id="overlay" style="position:fixed; top:0; left:0; right:0; bottom:0; background-color:rgba(0,0,0,0.5)" onclick="overlay.style.display='none'">
 		<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background-color:rgba(255,255,255,0.9); border-radius:8px; padding:0 8px">
