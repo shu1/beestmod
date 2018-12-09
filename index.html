@@ -113,7 +113,7 @@ google.charts.setOnLoadCallback(function() {
 			var row = [{v: data[s][j][0]}];
 			for (var i=0; i < data.length; ++i) {
 				if (data[i]) {
-					row.push({v: ((data[i][j][1] / prices[i]) - 1) * 100});
+					row.push({v: (data[i][j][1] / prices[i]) - 1});
 					if (data[i][j][0] != data[s][j][0]) {
 						logs.push(asset.sy[s] + " " + data[s][j][0] + " " + asset.sy[i] + " " + data[i][j][0]);
 					}
@@ -157,7 +157,7 @@ google.charts.setOnLoadCallback(function() {
 					}
 				}
 			}
-			array.push([data[s][j][0], ((sum / asset.n) - 1) * 100]);
+			array.push([data[s][j][0], (sum / asset.n) - 1]);
 		}
 		if (logs.length > 0) console.error(logs);
 
@@ -199,6 +199,7 @@ google.charts.setOnLoadCallback(function() {
 	function drawChart(cols, rows, chart, i) {
 		if (!chart) {
 			var div = document.getElementById("chart"+i);
+			div.tabIndex = 0;
 			chart = new google.visualization.LineChart(div);
 
 			div.addEventListener('wheel', function(event) {
@@ -241,22 +242,23 @@ google.charts.setOnLoadCallback(function() {
 		}
 
 		chart.draw(new google.visualization.DataTable({cols:cols, rows:rows}), {
-			chartArea: {left:60, top:5, width:'100%', height:'85%'},
-			legend: {position:'in'},
-			width: 980,
-			height: 540
+			chartArea:{left:62, top:5, width:'100%', height:'89%'},
+			vAxis:{format:'percent'},
+			legend:{position:'in'},
+			width:980,
+			height:540
 		})
 		return chart;
 	}
 })
 </script>
 </head>
-<body style="width:980px; margin-left:auto; margin-right:auto; font-family:sans-serif; font-size:20">
-	<div id="chart0" tabindex="0" style="outline:none"></div>
-	<div id="chart1" tabindex="0" style="outline:none"></div>
-	<div id="chart2" tabindex="0" style="outline:none"></div>
+<body style="width:980px; margin-left:auto; margin-right:auto; font-family:sans-serif">
+	<div id="chart0" style="outline:none"></div>
+	<div id="chart1" style="outline:none"></div>
+	<div id="chart2" style="outline:none"></div>
 	<div>&nbsp;Developed by <a href="https://github.com/shu1" target="_blank">Shuichi Aizawa</a>. Inspired by <a href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">Omid Malekan</a>.</div>
-	<div id="overlay" style="position:fixed; top:0; left:0; right:0; bottom:0; background-color:rgba(0,0,0,0.5)" onclick="overlay.style.display='none'">
+	<div id="overlay" style="position:fixed; top:0; left:0; right:0; bottom:0; background-color:rgba(0,0,0,0.5)" onclick="this.style.display='none'">
 		<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background-color:rgba(255,255,255,0.9); border-radius:8px; padding:0 8px">
 <p>Inspired by <a href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">The Case for Selling FAANG and Buying BEEStMoD</a> to make concrete comparisons between investments in stocks and cryptocurrencies. Charts show how the stocks and crypto performed over time, given equal investments on a start date. The 3rd chart shows the aggregate of all the stocks vs the aggregate of all the crypto.</p>
 <p>Make your own comparisons by changing the url parameters <b>stocks</b>, <b>crypto</b>, and <b>date</b>. Adjust the start dates of each chart with your mouse <b>scroll wheel</b>, or click on a chart and then tap your left/right <b>arrow keys</b>. <b>Hover</b> over each line to see details on data points, or <b>click</b> on a label to highlight that line.</p>
