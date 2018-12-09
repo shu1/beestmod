@@ -20,7 +20,7 @@ google.charts.setOnLoadCallback(function() {
 		fu: "DIGITAL_CURRENCY_DAILY",
 		k1: "Time Series (Digital Currency Daily)",
 		k2: "4b. close (USD)"
-	}]
+	},{}]
 
 	var params={}, urlParams = location.search.slice(1).split('&');
 	for (var i=0; i < urlParams.length; ++i) {
@@ -35,7 +35,7 @@ google.charts.setOnLoadCallback(function() {
 		assets[1].sy = params['crypto'] ? params['crypto'].split(',') : [];
 	}
 
-	for (var i=0; i < assets.length; ++i) {
+	for (var i=0; i<2; ++i) {
 		assets[i].l = 0;
 		assets[i].n = 0;
 		assets[i].s = -1;
@@ -123,11 +123,12 @@ google.charts.setOnLoadCallback(function() {
 		}
 		if (logs.length > 0) console.error(logs);
 
-		asset.ch = drawChart(asset.cols, rows, asset.ch, index);
+		drawChart(index, rows);
 
 		if (versus && assets[0].ti && assets[1].ti) {
-			versusStart = assets[0].st;
-			versusCols = [
+			assets[2].st = assets[0].st;
+			assets[2].en = assets[0].en;
+			assets[2].cols = [
 				{id:'date',	label:' ', type:'string'},
 				{id:assets[0].ti, label:assets[0].ti, type:'number'},
 				{id:assets[1].ti, label:assets[1].ti, type:'number'}
@@ -164,15 +165,14 @@ google.charts.setOnLoadCallback(function() {
 		return array;
 	}
 
-	var versusStart, versusCols, versusChart;
 	function prepVersus() {
-		var date = new Date(assets[0].da[assets[0].s][versusStart][0]);
+		var date = new Date(assets[0].da[assets[0].s][assets[2].st][0]);
 		var start = assets[1].en;
 		while (start > 0 && new Date(assets[1].da[assets[1].s][start][0]) < date) {
 			--start;
 		}
 
-		var array0 = prepArray(0, versusStart);
+		var array0 = prepArray(0, assets[2].st);
 		var array1 = prepArray(1, start);
 
 		var timeout=9999, i=0, j=0, rows=[], logs=[];
@@ -193,24 +193,29 @@ google.charts.setOnLoadCallback(function() {
 		}
 		if (logs.length > 0) console.error(logs);
 
-		versusChart = drawChart(versusCols, rows, versusChart, 2);
+		drawChart(2, rows);
 	}
 
-	function drawChart(cols, rows, chart, i) {
-		if (!chart) {
+	function drawChart(i, rows) {
+		if (!assets[i].ch) {
 			var div = document.getElementById("chart"+i);
 			div.tabIndex = 0;
-			chart = new google.visualization.LineChart(div);
+			div.style = "margin:8px 0; outline:none";
+			assets[i].ch = new google.visualization.LineChart(div);
+
+			div.addEventListener('mouseenter', function(event) {
+				this.style.outline = "1px solid #eee";
+			})
+
+			div.addEventListener('mouseleave', function(event) {
+				this.style.outline = "none";
+			})
 
 			div.addEventListener('wheel', function(event) {
 				var dy = event.deltaY > 0 ? 1 : -1;
-				if (i < 2 && (dy > 0 && assets[i].st > 0 || dy < 0 && assets[i].st < assets[i].en)) {
+				if (dy > 0 && assets[i].st > 0 || dy < 0 && assets[i].st < assets[i].en) {
 					assets[i].st -= dy;
-					prepData(i);
-				}
-				else if (i == 2 && (dy > 0 && versusStart > 0 || dy < 0 && versusStart < assets[0].en)) {
-					versusStart -= dy;
-					prepVersus();
+					(i<2) ? prepData(i) : prepVersus();
 				}
 				event.preventDefault();
 			})
@@ -218,49 +223,40 @@ google.charts.setOnLoadCallback(function() {
 			div.addEventListener('keyup', function(event) {
 				switch (event.key) {
 				case 'ArrowRight':
-					if (i < 2 && assets[i].st > 0) {
+					if (assets[i].st > 0) {
 						assets[i].st--;
-						prepData(i);
-					}
-					else if (i == 2 && versusStart > 0) {
-						--versusStart;
-						prepVersus();
+						(i<2) ? prepData(i) : prepVersus();
 					}
 					break;
 				case 'ArrowLeft':
-					if (i < 2 && assets[i].st < assets[i].en) {
+					if (assets[i].st < assets[i].en) {
 						assets[i].st++;
-						prepData(i);
-					}
-					else if (i == 2 && versusStart < assets[0].en) {
-						++versusStart;
-						prepVersus();
+						(i<2) ? prepData(i) : prepVersus();
 					}
 					break;
 				}
 			})
 		}
 
-		chart.draw(new google.visualization.DataTable({cols:cols, rows:rows}), {
-			chartArea:{left:62, top:5, width:'100%', height:'89%'},
+		assets[i].ch.draw(new google.visualization.DataTable({cols:assets[i].cols, rows:rows}), {
+			chartArea:{left:62, top:10, width:'100%', height:'88%'},
 			vAxis:{format:'percent'},
 			legend:{position:'in'},
 			width:980,
 			height:540
 		})
-		return chart;
 	}
 })
 </script>
 </head>
 <body style="width:980px; margin-left:auto; margin-right:auto; font-family:sans-serif">
-	<div id="chart0" style="outline:none"></div>
-	<div id="chart1" style="outline:none"></div>
-	<div id="chart2" style="outline:none"></div>
+	<div id="chart0"></div>
+	<div id="chart1"></div>
+	<div id="chart2"></div>
 	<div>&nbsp;Developed by <a href="https://github.com/shu1" target="_blank">Shuichi Aizawa</a>. Inspired by <a href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">Omid Malekan</a>.</div>
 	<div id="overlay" style="position:fixed; top:0; left:0; right:0; bottom:0; background-color:rgba(0,0,0,0.5)" onclick="this.style.display='none'">
 		<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background-color:rgba(255,255,255,0.9); border-radius:8px; padding:0 8px">
-<p>Inspired by <a href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">The Case for Selling FAANG and Buying BEEStMoD</a> to make concrete comparisons between investments in stocks and cryptocurrencies. Charts show how the stocks and crypto performed over time, given equal investments on a start date. The 3rd chart shows the aggregate of all the stocks vs the aggregate of all the crypto.</p>
+<p>This was inspired by <a href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">The Case for Selling FAANG and Buying BEEStMoD</a> to make concrete comparisons between investments in stocks and cryptocurrencies. Charts show how the stocks and crypto performed over time, given equal investments on a start date. The 3rd chart shows the aggregate of all the stocks vs the aggregate of all the crypto.</p>
 <p>Make your own comparisons by changing the url parameters <b>stocks</b>, <b>crypto</b>, and <b>date</b>. Adjust the start dates of each chart with your mouse <b>scroll wheel</b>, or click on a chart and then tap your left/right <b>arrow keys</b>. <b>Hover</b> over each line to see details on data points, or <b>click</b> on a label to highlight that line.</p>
 <p>Click anywhere to go to the charts.</p>
 		</div>
