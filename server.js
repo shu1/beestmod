@@ -1,5 +1,5 @@
 // Shuichi Aizawa 2018 github.com/shu1
-'use strict';
+"use strict";
 
 var https = require('https');
 var express = require('express');
