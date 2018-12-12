@@ -24,6 +24,10 @@ function init(f, s) {
 	}
 }
 
+app.get('/get', function(req, res) {
+	get(req.query.function, req.query.symbol, res);
+});
+
 function get(f, s, res) {
 	https.get("https://www.alphavantage.co/query?function=" + f + "&symbol=" + s + "&market=USD&outputsize=full&apikey=" + process.env.apikey, function(response) {
 		var data = "";
@@ -57,6 +61,16 @@ app.get('/all', function(req, res) {
 			res.send(err);
 		} else {
 			res.send(result);
+		}
+	});
+});
+
+app.get('/one', function(req, res) {
+	db.all("SELECT * FROM alphavantage WHERE function = ? AND symbol = ?", [req.query.function, req.query.symbol], function(err, rows) {
+		if (err) {
+			res.send(err);
+		} else {
+			res.send(rows);
 		}
 	});
 });
