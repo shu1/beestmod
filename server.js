@@ -66,11 +66,11 @@ app.get('/all', function(req, res) {
 });
 
 app.get('/one', function(req, res) {
-	db.all("SELECT * FROM alphavantage WHERE function = ? AND symbol = ?", [req.query.function, req.query.symbol], function(err, rows) {
+	pool.query("SELECT * FROM alphavantage WHERE function = $1 AND symbol = $2", [req.query.function, req.query.symbol], function(err, result) {
 		if (err) {
 			res.send(err);
 		} else {
-			res.send(rows);
+			res.send(result);
 		}
 	});
 });
