@@ -92,6 +92,7 @@ google.charts.setOnLoadCallback(function() {
 					asset.ti = "BEEStMoD";
 				}
 				document.title = asset.ti;
+				title.innerHTML = asset.ti;
 				prepData(index, true);
 			}
 		}
@@ -134,6 +135,7 @@ google.charts.setOnLoadCallback(function() {
 				{id:assets[1].ti, label:assets[1].ti, type:'number'}
 			];
 			document.title = assets[0].ti + " vs " + assets[1].ti;
+			title.innerHTML = assets[0].ti + " vs " + assets[1].ti;
 			prepVersus();
 		}
 	}
@@ -256,9 +258,9 @@ google.charts.setOnLoadCallback(function() {
 	<div>&nbsp;Developed by <a href="https://github.com/shu1" target="_blank">Shuichi Aizawa</a>. Inspired by <a href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">Omid Malekan</a>.</div>
 	<div id="overlay" style="position:fixed; top:0; left:0; right:0; bottom:0; background-color:rgba(0,0,0,0.5)" onclick="this.style.display='none'">
 		<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background-color:rgba(255,255,255,0.9); border-radius:8px; padding:0 8px">
-<p><b>FAANG vs BEEStMoD</b></p>
-<p>Inspired by <a href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">The Case for Selling FAANG and Buying BEEStMoD</a> to make concrete comparisons between investments in stocks and cryptocurrencies. The charts show, if you had invested equal amounts into stocks and crypto, how they performed over time.</p>
-<p>Use your mouse <b>scroll wheel</b> to change the start dates of each chart, or click on a chart and then tap your left/right <b>arrow keys</b>. You can <b>hover</b> over a line to see details on data points, or <b>click</b> on a label to highlight it's line. Make your own comparisons by changing the url parameters <b>stocks</b>, <b>crypto</b>, and <b>date</b>.</p>
+<p><b id="title">FAANG vs BEEStMoD</b></p>
+<p>Inspired by <a href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">The Case for Selling FAANG and Buying BEEStMoD</a> to make concrete comparisons between investments in <b>stocks vs cryptocurrencies</b>. The charts show, if you had invested equal amounts into stocks and crypto on the same day, how they compared over time.</p>
+<p>Use your mouse <b>scroll wheel</b> to change the start dates of each chart, or click on a chart and then tap your left/right <b>arrow keys</b>. Make your own comparisons by changing the <b>url parameters</b> stocks, crypto, and date.</p>
 <p><b>Click</b> anywhere to go to the charts.</p>
 		</div>
 	</div>
