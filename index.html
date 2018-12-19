@@ -75,25 +75,46 @@ google.charts.setOnLoadCallback(function() {
 			console.log(asset.sy[symbol] + " " + data.length);
 
 			asset.l++;
-			if (asset.l == asset.sy.length && asset.n) {
-				asset.st = asset.en;
-				asset.ti = "";
-				asset.cols = [{label:' ', type:'string'}];
-				for (var i=0; i < asset.da.length; ++i) {
-					if (asset.da[i]) {
-						asset.ti += asset.sy[i].slice(0,1);
-						asset.cols.push({label:asset.sy[i], type:'number'});
+			if (asset.l == asset.sy.length) {
+				loading.style.display = "none";
+				charts.style.display = "block";
+
+				if (asset.n) {
+					asset.st = asset.en;
+					asset.ti = "";
+					asset.cols = [{label:' ', type:'string'}];
+					for (var i=0; i < asset.da.length; ++i) {
+						if (asset.da[i]) {
+							asset.ti += asset.sy[i].slice(0,1);
+							asset.cols.push({label:asset.sy[i], type:'number'});
+						}
 					}
+					if (asset.n == 1) {
+						asset.ti = asset.sy[asset.s];
+					}
+					else if (asset.ti == "BBEEXXD") {
+						asset.ti = "BEEStMoD";
+					}
+					document.title = asset.ti;
+					title.innerHTML = asset.ti;
+
+					var div = document.getElementById("p"+index);
+					div.style.display = "block";
+					if (assets[0].ti == "FAANG") {
+						var span = document.getElementById("span0");
+						span.style.display = "inline";
+					}
+					if (assets[1].ti == "BEEStMoD") {
+						var span = document.getElementById("span1");
+						span.style.display = "inline";
+					}
+					if (assets[0].ti && assets[1].ti) {
+						var div = document.getElementById("p2");
+						div.style.display = "block";
+					}
+
+					prepData(index, true);
 				}
-				if (asset.n == 1) {
-					asset.ti = asset.sy[asset.s];
-				}
-				else if (asset.ti == "BBEEXXD") {
-					asset.ti = "BEEStMoD";
-				}
-				document.title = asset.ti;
-				title.innerHTML = asset.ti;
-				prepData(index, true);
 			}
 		}
 		request.open('get', "query?function=" + asset.fu + "&symbol=" + asset.sy[symbol] + "&market=USD&outputsize=full&apikey=" + (params["apikey"]||btoa(Math.random()).slice(0,16).toUpperCase()));
@@ -199,11 +220,12 @@ google.charts.setOnLoadCallback(function() {
 	}
 
 	function drawChart(i, rows) {
-		if (!assets[i].ch) {
+		var asset = assets[i];
+
+		if (!asset.ch) {
 			var div = document.getElementById("chart"+i);
 			div.tabIndex = 0;
-			div.style = "margin:1em 0; outline:none";
-			assets[i].ch = new google.visualization.LineChart(div);
+			asset.ch = new google.visualization.LineChart(div);
 
 			div.addEventListener('mouseenter', function(event) {
 				this.style.outline = "1px solid #eee";
@@ -215,8 +237,8 @@ google.charts.setOnLoadCallback(function() {
 
 			div.addEventListener('wheel', function(event) {
 				var dy = event.deltaY > 0 ? 1 : -1;
-				if (dy > 0 && assets[i].st > 0 || dy < 0 && assets[i].st < assets[i].en) {
-					assets[i].st -= dy;
+				if (dy > 0 && asset.st > 0 || dy < 0 && asset.st < asset.en) {
+					asset.st -= dy;
 					(i<2) ? prepData(i) : prepVersus();
 				}
 				event.preventDefault();
@@ -225,14 +247,14 @@ google.charts.setOnLoadCallback(function() {
 			div.addEventListener('keyup', function(event) {
 				switch (event.key) {
 				case 'ArrowRight':
-					if (assets[i].st > 0) {
-						assets[i].st--;
+					if (asset.st > 0) {
+						asset.st--;
 						(i<2) ? prepData(i) : prepVersus();
 					}
 					break;
 				case 'ArrowLeft':
-					if (assets[i].st < assets[i].en) {
-						assets[i].st++;
+					if (asset.st < asset.en) {
+						asset.st++;
 						(i<2) ? prepData(i) : prepVersus();
 					}
 					break;
@@ -240,29 +262,37 @@ google.charts.setOnLoadCallback(function() {
 			})
 		}
 
-		assets[i].ch.draw(new google.visualization.DataTable({cols:assets[i].cols, rows:rows}), {
+		asset.ch.draw(new google.visualization.DataTable({cols:asset.cols, rows:rows}), {
 			chartArea:{left:62, top:10, width:'100%', height:'88%'},
 			vAxis:{format:'percent'},
 			legend:{position:'in'},
-			width:980,
+			width:960,
 			height:540
 		})
 	}
 })
 </script>
+<style>
+p {margin: 2em 0 1em}
+</style>
 </head>
-<body style="width:980px; margin-left:auto; margin-right:auto; font-family:sans-serif">
-	<div id="chart2"></div>
-	<div id="chart1"></div>
-	<div id="chart0"></div>
-	<div>&nbsp;Developed by <a href="https://github.com/shu1" target="_blank">Shuichi Aizawa</a>. Inspired by <a href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">Omid Malekan</a>.</div>
-	<div id="overlay" style="position:fixed; top:0; left:0; right:0; bottom:0; background-color:rgba(0,0,0,0.5)" onclick="this.style.display='none'">
-		<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background-color:rgba(255,255,255,0.9); border-radius:8px; padding:0 8px">
-<p><b id="title">FAANG vs BEEStMoD</b></p>
-<p>Inspired by <a href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">The Case for Selling FAANG and Buying BEEStMoD</a> to make concrete comparisons between investments in <b>stocks vs cryptocurrencies</b>. The charts show, if you had invested equal amounts into stocks and crypto on the same day, how they compared over time.</p>
-<p>Use your mouse <b>scroll wheel</b> to change the start dates of each chart, or click on a chart and then tap your left/right <b>arrow keys</b>. Make your own comparisons by changing the <b>url parameters</b> stocks, crypto, and date.</p>
-<p><b>Click</b> anywhere to go to the charts.</p>
-		</div>
+<body style="background-color:#eee; margin:0; font-family:sans-serif">
+<div  style="background-color:#fff; margin:auto; width:960px; padding:10px">
+	<b id="title">FAANG vs BEEStMoD</b>
+	<p>Inspired by <a href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">The Case for Selling FAANG and Buying BEEStMoD</a> to compare investments between <b>stocks vs cryptocurrencies</b>.<br>
+	The charts show, if you had invested equal amounts into stocks and crypto on the same day, how they performed over time.</p>
+	<center id="loading">Loading Charts...</center>
+	<div id="charts" style="display:none">
+		<p id="p0" style="display:none">Stocks:<span id="span0" style="display:none"> <b>FAANG</b> is Facebook, Apple, Amazon, Netflix, and Google</span></p>
+		<div id="chart0"></div>
+		<p id="p1" style="display:none">Crypto:<span id="span1" style="display:none"> <b>BEEStMoD</b> is Bitcoin, Bitcoin Cash, Ethereum, EOS, Stellar, Monero, and Dash</span></p>
+		<div id="chart1"></div>
+		<p id="p2" style="display:none">Stocks vs Crypto:</p>
+		<div id="chart2"></div>
 	</div>
+	<p>Use your mouse <b>scroll wheel</b> to move the start dates of each chart, or click on a chart and then tap your left/right <b>arrow keys</b>.<br>
+	Look up your own stocks and crypto by changing the <b>url parameters</b>: stocks, crypto, and date.</p>
+	<div>Developed by <a href="https://github.com/shu1" target="_blank">Shuichi Aizawa</a>. Inspired by <a href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">Omid Malekan</a>.</div>
+</div>
 </body>
 </html>
