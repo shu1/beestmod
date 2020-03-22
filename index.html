@@ -32,8 +32,8 @@ google.charts.setOnLoadCallback(function() {
 		startDate = new Date(params['date']);
 	}
 	if (params['stocks'] || params['crypto']) {
-		assets[0].sy = params['stocks'] ? params['stocks'].split(',') : [];
-		assets[1].sy = params['crypto'] ? params['crypto'].split(',') : [];
+		assets[0].sy = params['stocks'] ? params['stocks'].toUpperCase().split(',') : [];
+		assets[1].sy = params['crypto'] ? params['crypto'].toUpperCase().split(',') : [];
 	}
 
 	for (var i=0; i<2; ++i) {
