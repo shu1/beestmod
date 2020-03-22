@@ -6,6 +6,28 @@
 <meta name="monetization" content="$coil.xrptipbot.com/MoH6t6gjRPyZ9rYOYuj_Sw">
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-7050108-4"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','UA-7050108-4')</script>
+<style>
+p {margin: 2em 0 1em}
+</style>
+</head>
+<body style="background-color:#eee; margin:0; font-family:sans-serif">
+<div  style="background-color:#fff; margin:auto; width:960px; padding:10px">
+	<b id="title">FAANG vs BEEStMoD</b>
+	<p>Inspired by <a href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">The Case for Selling FAANG and Buying BEEStMoD</a> to compare investments between <b>stocks vs cryptocurrencies</b>.<br>
+	The charts show, if you had invested equal amounts into stocks and crypto on the same day, how they performed over time.</p>
+	<center id="loading">Loading Charts...</center>
+	<div id="charts" style="display:none">
+		<p id="p0" style="display:none"><b>Stocks:</b><span id="span0" style="display:none"> <b>FAANG</b> is Facebook, Apple, Amazon, Netflix, and Google</span></p>
+		<div id="chart0"></div>
+		<p id="p1" style="display:none"><b>Crypto:</b><span id="span1" style="display:none"> <b>BEEStMoD</b> is Bitcoin, Bitcoin Cash, Ethereum, EOS, Stellar, Monero, and Dash</span></p>
+		<div id="chart1"></div>
+		<p id="p2" style="display:none"><b>Stocks vs Crypto:</b></p>
+		<div id="chart2"></div>
+	</div>
+	<p>Use your mouse <b>scroll wheel</b> to move the start dates of each chart, or click on a chart and then tap your left/right <b>arrow keys</b>.<br>
+	Look up your own stocks and crypto by changing the <b>url parameters</b>.</p>
+	<div>Developed by <a href="https://github.com/shu1" target="_blank">Shuichi Aizawa</a>. Inspired by <a href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">Omid Malekan</a>.</div>
+</div>
 <script src="https://www.gstatic.com/charts/loader.js"></script>
 <script>
 "use strict";
@@ -55,9 +77,6 @@ google.charts.setOnLoadCallback(function() {
 			var series = JSON.parse(this.response)[asset.k1];
 			if (series) {
 				asset.n++;
-				if (asset.sy[symbol] == 'XLM' && (!startDate || startDate < new Date('2017-01-26'))) {
-					startDate = new Date('2017-01-26');
-				}
 				for (var i in series) {
 					var date = new Date(i);
 					if (startDate && startDate > date) break;
@@ -273,27 +292,5 @@ google.charts.setOnLoadCallback(function() {
 	}
 })
 </script>
-<style>
-p {margin: 2em 0 1em}
-</style>
-</head>
-<body style="background-color:#eee; margin:0; font-family:sans-serif">
-<div  style="background-color:#fff; margin:auto; width:960px; padding:10px">
-	<b id="title">FAANG vs BEEStMoD</b>
-	<p>Inspired by <a href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">The Case for Selling FAANG and Buying BEEStMoD</a> to compare investments between <b>stocks vs cryptocurrencies</b>.<br>
-	The charts show, if you had invested equal amounts into stocks and crypto on the same day, how they performed over time.</p>
-	<center id="loading">Loading Charts...</center>
-	<div id="charts" style="display:none">
-		<p id="p0" style="display:none"><b>Stocks:</b><span id="span0" style="display:none"> <b>FAANG</b> is Facebook, Apple, Amazon, Netflix, and Google</span></p>
-		<div id="chart0"></div>
-		<p id="p1" style="display:none"><b>Crypto:</b><span id="span1" style="display:none"> <b>BEEStMoD</b> is Bitcoin, Bitcoin Cash, Ethereum, EOS, Stellar, Monero, and Dash</span></p>
-		<div id="chart1"></div>
-		<p id="p2" style="display:none"><b>Stocks vs Crypto:</b></p>
-		<div id="chart2"></div>
-	</div>
-	<p>Use your mouse <b>scroll wheel</b> to move the start dates of each chart, or click on a chart and then tap your left/right <b>arrow keys</b>.<br>
-	Look up your own stocks and crypto by changing the <b>url parameters</b>.</p>
-	<div>Developed by <a href="https://github.com/shu1" target="_blank">Shuichi Aizawa</a>. Inspired by <a href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">Omid Malekan</a>.</div>
-</div>
 </body>
 </html>
