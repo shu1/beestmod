@@ -118,5 +118,5 @@ app.get('/query', function(req, res) {
 });
 
 var listener = app.listen(process.env.PORT, function() {
-	console.log("listening on " + listener.address().port);
+	console.log("app is listening on " + listener.address().port);
 });
