@@ -14,7 +14,7 @@ pool.query("CREATE TABLE alphavantage(datetime TIMESTAMPTZ NOT NULL, function TE
 		console.error("table created");
 		init('TIME_SERIES_DAILY_ADJUSTED', ['FB','AAPL','AMZN','NFLX','GOOG']);
 		setTimeout(init, 65000,  'DIGITAL_CURRENCY_DAILY', ['BTC','BCH','ETH','EOS','XLM']);
-		setTimeout(init, 130000, 'DIGITAL_CURRENCY_DAILY', ['XMR','DASH','LTC', 'XRP', 'USDT']);
+		setTimeout(init, 130000, 'DIGITAL_CURRENCY_DAILY', ['XMR','DASH','LTC', 'XRP', 'ETC']);
 	}
 });
 
@@ -75,16 +75,12 @@ app.get('/one', function(req, res) {
 	});
 });
 
-app.get('/crons', function(req, res) {
+app.get('/cron', function(req, res) {
 	var date = new Date();
-	date.setHours(0,3,0);
-	cron('TIME_SERIES_DAILY_ADJUSTED', date, 10000000, res);
-});
-
-app.get('/cronc', function(req, res) {
-	var date = new Date();
-	date.setHours(1,33,0);
-	cron('DIGITAL_CURRENCY_DAILY', date, 10000000, res);
+	if (req.query.h && req.query.m) {
+		date.setHours(req.query.h, req.query.m, 0);
+	}
+	cron(req.query.f=='c'?'DIGITAL_CURRENCY_DAILY':'TIME_SERIES_DAILY_ADJUSTED', date.toISOString(), 10000000, res);
 });
 
 function cron(f, time, prev, res) {
@@ -92,7 +88,7 @@ function cron(f, time, prev, res) {
 	pool.query("SELECT function, symbol FROM alphavantage WHERE function = $1 AND datetime < $2 ORDER BY datetime", [f, time], function(err, result) {
 		if (err) {
 			console.error(err);
-			res && res.send(err);
+			res && res.status(500).send(err);
 		} else {
 			for (var i=0; i<5 && i<result.rowCount; ++i) {
 				get(result.rows[i].function, result.rows[i].symbol);
