@@ -45,13 +45,17 @@ google.charts.setOnLoadCallback(function() {
 		k2: "4b. close (USD)"
 	},{}]
 
-	var params={}, urlParams = location.search.slice(1).split('&');
+	var startDate, params={}, urlParams = location.search.slice(1).split('&');
 	for (var i=0; i < urlParams.length; ++i) {
 		var pair = urlParams[i].split('=');
 		params[pair[0]] = pair[1];
 	}
 	if (params['date']) {
 		startDate = new Date(params['date']);
+	}
+	else if (params['days']) {
+		startDate = new Date();
+		startDate.setUTCDate(startDate.getDate() - params['days']);
 	}
 	if (params['stocks'] || params['crypto']) {
 		assets[0].sy = params['stocks'] ? params['stocks'].toUpperCase().split(',') : [];
@@ -69,7 +73,6 @@ google.charts.setOnLoadCallback(function() {
 		}
 	}
 
-	var startDate;
 	function getData(index, symbol) {
 		var asset = assets[index], request = new XMLHttpRequest();
 		request.onload = function() {
