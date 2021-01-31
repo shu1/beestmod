@@ -35,12 +35,12 @@ function get(f, s, res) {
 		response.on("end", function() {
 			var parsed = JSON.parse(data);
 			if (parsed["Meta Data"]) {
-				console.log(s + " insert");
+				console.log(s, "insert");
 				pool.query("INSERT INTO alphavantage(datetime, function, symbol, data) VALUES(NOW(), $1, $2, $3) ON CONFLICT(function, symbol) DO UPDATE SET datetime = NOW(), data = $3", [f,s,data], function(err, result) {
 					err && console.error(err);
 				})
 			} else {
-				console.error(s + " denied");
+				console.error(s, "denied");
 			}
 			res && res.send(data);
 		})
@@ -84,7 +84,7 @@ app.get("/cron", function(req, res) {
 })
 
 function cron(f, time, prev, res) {
-	console.log("cron " + f + " " + prev);
+	console.log("cron", f, prev);
 	pool.query("SELECT function, symbol FROM alphavantage WHERE function = $1 AND datetime < $2 ORDER BY datetime", [f, time], function(err, result) {
 		if (err) {
 			console.error(err);
@@ -109,7 +109,7 @@ app.get("/query", function(req, res) {
 		}
 		else if (result && result.rowCount > 0) {
 			var row = result.rows[0];
-			console.log(req.query.symbol + " in db");
+			console.log(req.query.symbol, "in db");
 			res.send(row.data);
 		} else {
 			get(req.query.function, req.query.symbol, res);
@@ -118,5 +118,5 @@ app.get("/query", function(req, res) {
 })
 
 var listener = app.listen(process.env.PORT, function() {
-	console.log("app is listening on " + listener.address().port);
+	console.log("app is listening on", listener.address().port);
 })
