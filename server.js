@@ -7,11 +7,11 @@ var app = express();
 var {Pool} = require("pg");
 var pool = new Pool({connectionString:process.env.DATABASE_URL, ssl:true});
 
-pool.query("CREATE TABLE alphavantage(datetime TIMESTAMPTZ NOT NULL, function TEXT NOT NULL, symbol TEXT NOT NULL, data TEXT NOT NULL, PRIMARY KEY (function, symbol))", function(err, result) {
+pool.query("CREATE TABLE alphavantage(datetime TIMESTAMPTZ NOT NULL, function TEXT NOT NULL, symbol TEXT NOT NULL, data TEXT NOT NULL, PRIMARY KEY(function, symbol))", function(err, result) {
 	if (err) {
 		console.log(err);
 	} else {
-		console.error("table created");
+		console.warn("table created");
 		init("TIME_SERIES_DAILY_ADJUSTED", ["FB","AAPL","AMZN","NFLX","GOOG"]);
 		setTimeout(init, 65000, "DIGITAL_CURRENCY_DAILY", ["BTC","BCH","ETH","EOS","XLM"]);
 		setTimeout(init, 130000, "DIGITAL_CURRENCY_DAILY", ["XMR","DASH","LTC","XRP","ETC"]);
@@ -40,7 +40,7 @@ function get(f, s, res) {
 					err && console.error(err);
 				})
 			} else {
-				console.error(s, "denied");
+				console.warn(s, "denied");
 			}
 			res && res.send(data);
 		})
@@ -66,10 +66,21 @@ app.get("/all", function(req, res) {
 })
 
 app.get("/one", function(req, res) {
-	pool.query("SELECT * FROM alphavantage WHERE function = $1 AND symbol = $2", [req.query.function, req.query.symbol], function(err, result) {
+	pool.query("SELECT * FROM alphavantage WHERE function=$1 AND symbol=$2", [req.query.function, req.query.symbol], function(err, result) {
 		if (err) {
 			res.send(err);
 		} else {
+			res.send(result);
+		}
+	})
+})
+
+app.get("/delete", function(req, res) {
+	pool.query("DELETE FROM alphavantage WHERE function=$1 AND symbol=$2", [req.query.function, req.query.symbol], function(err, result) {
+		if (err) {
+			res.send(err);
+		} else {
+			console.warn(req.query.symbol, "deleted");
 			res.send(result);
 		}
 	})
@@ -85,7 +96,7 @@ app.get("/cron", function(req, res) {
 
 function cron(f, time, prev, res) {
 	console.log("cron", f, prev);
-	pool.query("SELECT function, symbol FROM alphavantage WHERE function = $1 AND datetime < $2 ORDER BY datetime", [f, time], function(err, result) {
+	pool.query("SELECT function, symbol FROM alphavantage WHERE function=$1 AND datetime<$2 ORDER BY datetime", [f, time], function(err, result) {
 		if (err) {
 			console.error(err);
 			res && res.status(500).send(err);
@@ -103,7 +114,7 @@ function cron(f, time, prev, res) {
 }
 
 app.get("/query", function(req, res) {
-	pool.query("SELECT data FROM alphavantage WHERE function = $1 AND symbol = $2", [req.query.function, req.query.symbol], function(err, result) {
+	pool.query("SELECT data FROM alphavantage WHERE function=$1 AND symbol=$2", [req.query.function, req.query.symbol], function(err, result) {
 		if (err) {
 			console.error(err);
 		}
