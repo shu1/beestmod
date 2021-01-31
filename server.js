@@ -7,11 +7,11 @@ var app = express();
 var sqlite3 = require("sqlite3").verbose();
 var db = new sqlite3.Database("./.data/sqlite.db");
 
-db.run("CREATE TABLE alphavantage(datetime TEXT NOT NULL, function TEXT NOT NULL, symbol TEXT NOT NULL, data TEXT NOT NULL, PRIMARY KEY (function, symbol))", function(err) {
+db.run("CREATE TABLE alphavantage(datetime TEXT NOT NULL, function TEXT NOT NULL, symbol TEXT NOT NULL, data TEXT NOT NULL, PRIMARY KEY(function, symbol))", function(err) {
 	if (err) {
 		console.log(err);
 	} else {
-		console.error("table created");
+		console.warn("table created");
 		init("TIME_SERIES_DAILY_ADJUSTED", ["FB","AAPL","AMZN","NFLX","GOOG"]);
 		setTimeout(init, 65000, "DIGITAL_CURRENCY_DAILY", ["BTC","BCH","ETH","EOS","XLM"]);
 		setTimeout(init, 130000, "DIGITAL_CURRENCY_DAILY", ["XMR","DASH","LTC","XRP","ETC"]);
@@ -40,7 +40,7 @@ function get(f, s, res) {
 					err && console.error(err);
 				})
 			} else {
-				console.error(s, "denied");
+				console.warn(s, "denied");
 			}
 			res && res.send(data);
 		})
@@ -66,12 +66,19 @@ app.get("/all", function(req, res) {
 })
 
 app.get("/one", function(req, res) {
-	db.all("SELECT * FROM alphavantage WHERE function = ? AND symbol = ?", [req.query.function, req.query.symbol], function(err, rows) {
+	db.get("SELECT * FROM alphavantage WHERE function=? AND symbol=?", [req.query.function, req.query.symbol], function(err, row) {
 		if (err) {
 			res.send(err);
 		} else {
-			res.send(rows);
+			res.send(row);
 		}
+	})
+})
+
+app.get("/delete", function(req, res) {
+	db.run("DELETE FROM alphavantage WHERE function=? AND symbol=?", [req.query.function, req.query.symbol], function(err) {
+		console.warn(req.query.symbol, "deleted");
+		res.send(err);
 	})
 })
 
@@ -85,7 +92,7 @@ app.get("/cron", function(req, res) {
 
 function cron(f, time, prev, res) {
 	console.log("cron", f, prev);
-	db.all("SELECT function, symbol FROM alphavantage WHERE function = ? AND datetime(datetime) < datetime(?) ORDER BY datetime", [f,time], function(err, rows) {
+	db.all("SELECT function, symbol FROM alphavantage WHERE function=? AND datetime(datetime) < datetime(?) ORDER BY datetime", [f,time], function(err, rows) {
 		if (err) {
 			console.error(err);
 			res && res.status(500).send(err);
@@ -103,7 +110,7 @@ function cron(f, time, prev, res) {
 }
 
 app.get("/query", function(req, res) {
-	db.get("SELECT data FROM alphavantage WHERE function = ? AND symbol = ?", [req.query.function, req.query.symbol], function(err, row) {
+	db.get("SELECT data FROM alphavantage WHERE function=? AND symbol=?", [req.query.function, req.query.symbol], function(err, row) {
 		if (err) {
 			console.error(err);
 		}
