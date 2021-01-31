@@ -33,6 +33,7 @@ p {margin: 2em 0 1em}
 "use strict";
 google.charts.load("current", {packages:["corechart"]});
 google.charts.setOnLoadCallback(function() {
+	var ranges = [];
 	var assets = [{
 		sy: ["FB","AAPL","AMZN","NFLX","GOOG"],
 		fu: "TIME_SERIES_DAILY_ADJUSTED",
@@ -76,14 +77,17 @@ google.charts.setOnLoadCallback(function() {
 	function getData(index, symbol) {
 		var asset = assets[index], request = new XMLHttpRequest();
 		request.onload = function() {
-			var prevDate, data=[];
+			var prevDate, data=[], hi=0, lo=999999;
 			var series = JSON.parse(this.response)[asset.k1];
 			if (series) {
 				asset.n++;
 				for (var i in series) {
 					var date = new Date(i);
 					if (startDate && startDate > date) break;
-					data.push([i, parseFloat(series[i][asset.k2])]);
+					var price = parseFloat(series[i][asset.k2]);
+					data.push([i, price]);
+					if (price > hi) hi = price;
+					if (price < lo) lo = price;
 					prevDate = date;
 				}
 				if (prevDate && (!startDate || startDate <= prevDate)) {
@@ -95,10 +99,14 @@ google.charts.setOnLoadCallback(function() {
 					asset.s = symbol;
 				}
 			}
-			console.log(asset.sy[symbol] + " " + data.length);
+			console.log(asset.sy[symbol], data.length);
+			price = asset.da[symbol][0][1];
+			var range = (price - lo) / (hi - lo) * 100;
+			ranges[asset.sy[symbol]] = {range:range.toFixed(2)+"%", low:lo.toFixed(2), last:price.toFixed(2), high:hi.toFixed(2)};
 
 			asset.l++;
 			if (asset.l == asset.sy.length) {
+				console.table(ranges);
 				loading.style.display = "none";
 				charts.style.display = "block";
 
