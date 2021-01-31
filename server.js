@@ -35,12 +35,12 @@ function get(f, s, res) {
 		response.on("end", function() {
 			var parsed = JSON.parse(data);
 			if (parsed["Meta Data"]) {
-				console.log(s + " insert");
+				console.log(s, "insert");
 				db.run("INSERT OR REPLACE INTO alphavantage(datetime, function, symbol, data) VALUES(datetime('now'), ?, ?, ?)", [f,s,data], function(err) {
 					err && console.error(err);
 				})
 			} else {
-				console.error(s + " denied");
+				console.error(s, "denied");
 			}
 			res && res.send(data);
 		})
@@ -84,7 +84,7 @@ app.get("/cron", function(req, res) {
 })
 
 function cron(f, time, prev, res) {
-	console.log("cron " + f + " " + prev);
+	console.log("cron", f, prev);
 	db.all("SELECT function, symbol FROM alphavantage WHERE function = ? AND datetime(datetime) < datetime(?) ORDER BY datetime", [f,time], function(err, rows) {
 		if (err) {
 			console.error(err);
@@ -109,7 +109,7 @@ app.get("/query", function(req, res) {
 		}
 		else if (row) {
 
-			console.log(req.query.symbol + " in db");
+			console.log(req.query.symbol, "in db");
 			res.send(row.data);
 		} else {
 			get(req.query.function, req.query.symbol, res);
@@ -118,5 +118,5 @@ app.get("/query", function(req, res) {
 })
 
 var listener = app.listen(process.env.PORT, function() {
-	console.log("app is listening on " + listener.address().port);
+	console.log("app is listening on", listener.address().port);
 })
