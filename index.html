@@ -102,7 +102,7 @@ google.charts.setOnLoadCallback(function() {
 			console.log(asset.sy[symbol], data.length);
 			price = asset.da[symbol][0][1];
 			var range = (price - lo) / (hi - lo) * 100;
-			ranges[asset.sy[symbol]] = {range:range.toFixed(2)+"%", low:lo.toFixed(2), last:price.toFixed(2), high:hi.toFixed(2)};
+			ranges[asset.sy[symbol]] = {range:range.toFixed(2)+"%", low:Math.round(lo*100)/100, last:Math.round(price*100)/100, high:Math.round(hi*100)/100};
 
 			asset.l++;
 			if (asset.l == asset.sy.length) {
