@@ -58,7 +58,8 @@ app.get("/", function(req, res) {
 app.get("/all", function(req, res) {
 	pool.query("SELECT symbol, datetime FROM alphavantage ORDER BY datetime", function(err, result) {
 		if (err) {
-			res.send(err);
+			console.error(err);
+			res.status(500).send(err);
 		} else {
 			res.send(result);
 		}
@@ -68,7 +69,8 @@ app.get("/all", function(req, res) {
 app.get("/one", function(req, res) {
 	pool.query("SELECT * FROM alphavantage WHERE function=$1 AND symbol=$2", [req.query.function, req.query.symbol], function(err, result) {
 		if (err) {
-			res.send(err);
+			console.error(err);
+			res.status(500).send(err);
 		} else {
 			res.send(result);
 		}
@@ -78,9 +80,10 @@ app.get("/one", function(req, res) {
 app.get("/delete", function(req, res) {
 	pool.query("DELETE FROM alphavantage WHERE function=$1 AND symbol=$2", [req.query.function, req.query.symbol], function(err, result) {
 		if (err) {
-			res.send(err);
+			console.error(err);
+			res.status(500).send(err);
 		} else {
-			console.warn(req.query.symbol, "deleted");
+			console.warn(req.query.symbol, "delete", result.rowCount);
 			res.send(result);
 		}
 	})
@@ -117,6 +120,7 @@ app.get("/query", function(req, res) {
 	pool.query("SELECT data FROM alphavantage WHERE function=$1 AND symbol=$2", [req.query.function, req.query.symbol], function(err, result) {
 		if (err) {
 			console.error(err);
+			res && res.status(500).send(err);
 		}
 		else if (result && result.rowCount > 0) {
 			var row = result.rows[0];
