@@ -17,7 +17,7 @@ p {margin: 2em 0 1em}
 	The charts show, if you had invested equal amounts into stocks and crypto on the same day, how they performed over time.</p>
 	<center id="loading">Loading Charts...</center>
 	<div id="charts" style="display:none">
-		<p id="p0" style="display:none"><b>Stocks:</b><span id="span0" style="display:none"> <b>FAANG</b> is Facebook, Apple, Amazon, Netflix, and Google</span></p>
+		<p id="p0" style="display:none"><b>Stocks:</b><span id="span0" style="display:none"> <b>MAANG</b> is Meta, Apple, Amazon, Netflix, and Google</span></p>
 		<div id="chart0"></div>
 		<p id="p1" style="display:none"><b>Crypto:</b><span id="span1" style="display:none"> <b>BEEStMoD</b> is Bitcoin, Bitcoin Cash, Ethereum, EOS, Stellar, Monero, and Dash</span></p>
 		<div id="chart1"></div>
@@ -35,7 +35,7 @@ google.charts.load("current", {packages:["corechart"]});
 google.charts.setOnLoadCallback(function() {
 	var ranges = [];
 	var assets = [{
-		sy: ["FB","AAPL","AMZN","NFLX","GOOG"],
+		sy: ["META","AAPL","AMZN","NFLX","GOOG"],
 		fu: "TIME_SERIES_DAILY_ADJUSTED",
 		k1: "Time Series (Daily)",
 		k2: "5. adjusted close"
@@ -131,7 +131,7 @@ google.charts.setOnLoadCallback(function() {
 
 					var div = document.getElementById("p"+index);
 					div.style.display = "block";
-					if (assets[0].ti == "FAANG") {
+					if (assets[0].ti == "MAANG") {
 						var span = document.getElementById("span0");
 						span.style.display = "inline";
 					}

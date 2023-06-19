@@ -12,7 +12,7 @@ db.run("CREATE TABLE alphavantage(datetime TEXT NOT NULL, function TEXT NOT NULL
 		console.log(err);
 	} else {
 		console.warn("table created");
-		init("TIME_SERIES_DAILY_ADJUSTED", ["FB","AAPL","AMZN","NFLX","GOOG"]);
+		init("TIME_SERIES_DAILY_ADJUSTED", ["META","AAPL","AMZN","NFLX","GOOG"]);
 		setTimeout(init, 65000, "DIGITAL_CURRENCY_DAILY", ["BTC","BCH","ETH","EOS","XLM"]);
 		setTimeout(init, 130000, "DIGITAL_CURRENCY_DAILY", ["XMR","DASH","LTC","XRP","ETC"]);
 	}
@@ -49,7 +49,7 @@ function get(f, s, res) {
 
 app.get("/", function(req, res) {
 	if (!Object.keys(req.query).length) {
-		res.redirect("/?stocks=FB,AAPL,AMZN,NFLX,GOOG&crypto=BTC,BCH,ETH,EOS,XLM,XMR,DASH&date=2018-08-13");
+		res.redirect("/?stocks=META,AAPL,AMZN,NFLX,GOOG&crypto=BTC,BCH,ETH,EOS,XLM,XMR,DASH&date=2018-08-13");
 	} else {
 		res.sendFile(__dirname + "/index.html");
 	}
