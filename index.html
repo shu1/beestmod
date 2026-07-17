@@ -156,7 +156,7 @@
 						}
 					}
 				}
-				request.open("get", "query?function=" + asset.fu + "&symbol=" + asset.sy[symbol] + "&market=USD&outputsize=full&apikey=" + (params["apikey"] || btoa(Math.random()).slice(0, 16).toUpperCase()));
+				request.open("get", "https://api.massive.com/v2/aggs/ticker/" + (index ? "X:" + asset.sy[symbol] + "USD" : asset.sy[symbol]) + "/range/1/day/2000-01-01/" + new Date().toISOString().slice(0, 10) + "?apiKey=" + params["apiKey"]);
 				request.send();
 			}
 
