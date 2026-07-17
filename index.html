@@ -1,301 +1,310 @@
-<!-- Shuichi Aizawa 2018 github.com/shu1 -->
+<!-- Shuichi Aizawa shu1.dev 2026 -->
 <!doctype html>
 <html>
+
 <head>
-<title>FAANG vs BEEStMoD</title>
-<meta name="monetization" content="$coil.xrptipbot.com/MoH6t6gjRPyZ9rYOYuj_Sw">
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-7050108-4"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date());gtag("config","UA-7050108-4")</script>
-<style>
-p {margin: 2em 0 1em}
-</style>
-</head>
-<body style="background-color:#eee; margin:0; font-family:sans-serif">
-<div style="background-color:#fff; margin:auto; width:960px; padding:10px">
-	<b id="title">FAANG vs BEEStMoD</b>
-	<p>Inspired by <a href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">The Case for Selling FAANG and Buying BEEStMoD</a> to compare investments between <b>stocks vs cryptocurrencies</b>.<br>
-	The charts show, if you had invested equal amounts into stocks and crypto on the same day, how they performed over time.</p>
-	<center id="loading">Loading Charts...</center>
-	<div id="charts" style="display:none">
-		<p id="p0" style="display:none"><b>Stocks:</b><span id="span0" style="display:none"> <b>MAANG</b> is Meta, Apple, Amazon, Netflix, and Google</span></p>
-		<div id="chart0"></div>
-		<p id="p1" style="display:none"><b>Crypto:</b><span id="span1" style="display:none"> <b>BEEStMoD</b> is Bitcoin, Bitcoin Cash, Ethereum, EOS, Stellar, Monero, and Dash</span></p>
-		<div id="chart1"></div>
-		<p id="p2" style="display:none"><b>Stocks vs Crypto:</b></p>
-		<div id="chart2"></div>
-	</div>
-	<p>Use your mouse <b>scroll wheel</b> to move the start dates of each chart, or click on a chart and then tap your left/right <b>arrow keys</b>.<br>
-	Look up your own stocks and crypto by changing the <b>url parameters</b>.</p>
-	<div>Developed by <a href="https://github.com/shu1" target="_blank">Shuichi Aizawa</a>. Inspired by <a href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef" target="_blank">Omid Malekan</a>.</div>
-</div>
-<script src="https://www.gstatic.com/charts/loader.js"></script>
-<script>
-"use strict";
-google.charts.load("current", {packages:["corechart"]});
-google.charts.setOnLoadCallback(function() {
-	var ranges = [];
-	var assets = [{
-		sy: ["MSFT","AAPL","GOOG"],
-		fu: "TIME_SERIES_DAILY_ADJUSTED",
-		k1: "Time Series (Daily)",
-		k2: "5. adjusted close"
-	},{
-		sy: ["BTC","ETH"],
-		fu: "DIGITAL_CURRENCY_DAILY",
-		k1: "Time Series (Digital Currency Daily)",
-		k2: "4b. close (USD)"
-	},{}]
-
-	var startDate, params={}, urlParams = location.search.slice(1).split("&");
-	for (var i=0; i < urlParams.length; ++i) {
-		var pair = urlParams[i].split("=");
-		params[pair[0]] = pair[1];
-	}
-	if (params["date"]) {
-		startDate = new Date(params["date"]);
-	}
-	else if (params["days"]) {
-		startDate = new Date();
-		startDate.setUTCDate(startDate.getDate() - params["days"]);
-	}
-	if (params["stocks"] || params["crypto"]) {
-		assets[0].sy = params["stocks"] ? params["stocks"].toUpperCase().split(",") : [];
-		assets[1].sy = params["crypto"] ? params["crypto"].toUpperCase().split(",") : [];
-	}
-
-	for (var i=0; i<2; ++i) {
-		assets[i].l = 0;
-		assets[i].n = 0;
-		assets[i].s = -1;
-		assets[i].en = 9999;
-		assets[i].da = [];
-		for (var j=0; j < assets[i].sy.length; ++j) {
-			getData(i, j);
+	<title>FAANG vs BEEStMoD</title>
+	<meta name="monetization" content="$coil.xrptipbot.com/MoH6t6gjRPyZ9rYOYuj_Sw">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-7050108-4"></script>
+	<script>window.dataLayer = window.dataLayer || []; function gtag() { dataLayer.push(arguments) } gtag("js", new Date()); gtag("config", "UA-7050108-4")</script>
+	<style>
+		p {
+			margin: 2em 0 1em
 		}
-	}
+	</style>
+</head>
 
-	function getData(index, symbol) {
-		var asset = assets[index], request = new XMLHttpRequest();
-		request.onload = function() {
-			var prevDate, data=[], hi=0, lo=999999;
-			var series = JSON.parse(this.response)[asset.k1];
-			if (series) {
-				asset.n++;
-				for (var i in series) {
-					var date = new Date(i);
-					if (startDate && startDate > date) break;
-					var price = parseFloat(series[i][asset.k2]);
-					data.push([i, price]);
-					if (price > hi) hi = price;
-					if (price < lo) lo = price;
-					prevDate = date;
-				}
-				if (prevDate && (!startDate || startDate <= prevDate)) {
-					startDate = prevDate;
-				}
-				asset.da[symbol] = data;
-				if (asset.en > data.length-1) {
-					asset.en = data.length-1;
-					asset.s = symbol;
+<body style="background-color:#eee; margin:0; font-family:sans-serif">
+	<div style="background-color:#fff; margin:auto; width:960px; padding:10px">
+		<b id="title">FAANG vs BEEStMoD</b>
+		<p>Inspired by <a
+				href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef"
+				target="_blank">The Case for Selling FAANG and Buying BEEStMoD</a> to compare investments between
+			<b>stocks vs cryptocurrencies</b>.<br>
+			The charts show, if you had invested equal amounts into stocks and crypto on the same day, how they
+			performed over time.
+		</p>
+		<center id="loading">Loading Charts...</center>
+		<div id="charts" style="display:none">
+			<p id="p0" style="display:none"><b>Stocks:</b><span id="span0" style="display:none"> <b>FAANG</b> is
+					Facebook, Apple, Amazon, Netflix, and Google</span></p>
+			<div id="chart0"></div>
+			<p id="p1" style="display:none"><b>Crypto:</b><span id="span1" style="display:none"> <b>BEEStMoD</b> is
+					Bitcoin, Bitcoin Cash, Ethereum, EOS, Stellar, Monero, and Dash</span></p>
+			<div id="chart1"></div>
+			<p id="p2" style="display:none"><b>Stocks vs Crypto:</b></p>
+			<div id="chart2"></div>
+		</div>
+		<p>Use your mouse <b>scroll wheel</b> to move the start dates of each chart, or click on a chart and then tap
+			your left/right <b>arrow keys</b>.<br>
+			Look up your own stocks and crypto by changing the <b>url parameters</b>.</p>
+		<div>Developed by <a href="https://shu1.dev" target="_blank">Shuichi Aizawa</a>. Inspired by <a
+				href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef"
+				target="_blank">Omid Malekan</a>.</div>
+	</div>
+	<script src="https://www.gstatic.com/charts/loader.js"></script>
+	<script>
+		"use strict";
+		google.charts.load("current", { packages: ["corechart"] });
+		google.charts.setOnLoadCallback(function () {
+			var ranges = [];
+			var assets = [{
+				sy: ["NVDA", "AAPL", "GOOG"]
+			}, {
+				sy: ["BTC", "ETH"]
+			}, {}]
+
+			var startDate, params = {}, urlParams = location.search.slice(1).split("&");
+			for (var i = 0; i < urlParams.length; ++i) {
+				var pair = urlParams[i].split("=");
+				params[pair[0]] = pair[1];
+			}
+			if (params["date"]) {
+				startDate = new Date(params["date"]);
+			}
+			else if (params["days"]) {
+				startDate = new Date();
+				startDate.setUTCDate(startDate.getDate() - params["days"]);
+			}
+			if (params["stocks"] || params["crypto"]) {
+				assets[0].sy = params["stocks"] ? params["stocks"].toUpperCase().split(",") : [];
+				assets[1].sy = params["crypto"] ? params["crypto"].toUpperCase().split(",") : [];
+			}
+
+			for (var i = 0; i < 2; ++i) {
+				assets[i].l = 0;
+				assets[i].n = 0;
+				assets[i].s = -1;
+				assets[i].en = 9999;
+				assets[i].da = [];
+				for (var j = 0; j < assets[i].sy.length; ++j) {
+					getData(i, j);
 				}
 			}
-			console.log(asset.sy[symbol], data.length);
-			price = asset.da[symbol][0][1];
-			var range = (price - lo) / (hi - lo) * 100;
-			ranges[asset.sy[symbol]] = {range:range.toFixed(2)+"%", low:Math.round(lo*100)/100, last:Math.round(price*100)/100, high:Math.round(hi*100)/100};
 
-			asset.l++;
-			if (asset.l == asset.sy.length) {
-				console.table(ranges);
-				loading.style.display = "none";
-				charts.style.display = "block";
-
-				if (asset.n) {
-					asset.st = asset.en;
-					asset.ti = "";
-					asset.cols = [{label:" ", type:"string"}];
-					for (var i=0; i < asset.da.length; ++i) {
-						if (asset.da[i]) {
-							asset.ti += asset.sy[i].slice(0,1);
-							asset.cols.push({label:asset.sy[i], type:"number"});
+			function getData(index, symbol) {
+				var asset = assets[index], request = new XMLHttpRequest();
+				request.onload = function () {
+					var prevDate, data = [], hi = 0, lo = 999999;
+					var res = JSON.parse(this.response).results;
+					if (res) {
+						asset.n++;
+						for (var i = res.length - 1; i >= 0; --i) {
+							var date = new Date(res[i].t);
+							if (startDate && startDate > date) break;
+							var price = parseFloat(res[i].c);
+							data.push([date.toISOString().slice(0, 10), price]);
+							if (price > hi) hi = price;
+							if (price < lo) lo = price;
+							prevDate = date;
+						}
+						if (prevDate && (!startDate || startDate <= prevDate)) {
+							startDate = prevDate;
+						}
+						asset.da[symbol] = data;
+						if (asset.en > data.length - 1) {
+							asset.en = data.length - 1;
+							asset.s = symbol;
 						}
 					}
-					if (asset.n == 1) {
-						asset.ti = asset.sy[asset.s];
-					}
-					else if (asset.ti == "BBEEXXD") {
-						asset.ti = "BEEStMoD";
-					}
-					document.title = asset.ti;
-					title.innerHTML = asset.ti;
+					console.log(asset.sy[symbol], data.length);
+					price = asset.da[symbol][0][1];
+					var range = (price - lo) / (hi - lo) * 100;
+					ranges[asset.sy[symbol]] = { range: range.toFixed(2) + "%", low: Math.round(lo * 100) / 100, last: Math.round(price * 100) / 100, high: Math.round(hi * 100) / 100 };
 
-					var div = document.getElementById("p"+index);
-					div.style.display = "block";
-					if (assets[0].ti == "MAANG") {
-						var span = document.getElementById("span0");
-						span.style.display = "inline";
-					}
-					if (assets[1].ti == "BEEStMoD") {
-						var span = document.getElementById("span1");
-						span.style.display = "inline";
-					}
-					if (assets[0].ti && assets[1].ti) {
-						var div = document.getElementById("p2");
-						div.style.display = "block";
-					}
+					asset.l++;
+					if (asset.l == asset.sy.length) {
+						console.table(ranges);
+						loading.style.display = "none";
+						charts.style.display = "block";
 
-					prepData(index, true);
-				}
-			}
-		}
-		request.open("get", "https://www.alphavantage.co/query?function=" + asset.fu + "&symbol=" + asset.sy[symbol] + "&market=USD&outputsize=full&apikey=" + (params["apikey"] || btoa(Math.random()).slice(0,16).toUpperCase()));
-		request.send();
-	}
+						if (asset.n) {
+							asset.st = asset.en;
+							asset.ti = "";
+							asset.cols = [{ label: " ", type: "string" }];
+							for (var i = 0; i < asset.da.length; ++i) {
+								if (asset.da[i]) {
+									asset.ti += asset.sy[i].slice(0, 1);
+									asset.cols.push({ label: asset.sy[i], type: "number" });
+								}
+							}
+							if (asset.n == 1) {
+								asset.ti = asset.sy[asset.s];
+							}
+							else if (asset.ti == "BBEEXXD") {
+								asset.ti = "BEEStMoD";
+							}
+							document.title = asset.ti;
+							title.innerHTML = asset.ti;
 
-	function prepData(index, versus) {
-		var asset = assets[index], data = asset.da, s = asset.s;
-		var prices=[];
-		for (var i = data.length-1; i>=0; --i) {
-			if (data[i]) {
-				prices[i] = data[i][asset.st][1];
-			}
-		}
+							var div = document.getElementById("p" + index);
+							div.style.display = "block";
+							if (assets[0].ti == "FAANG") {
+								var span = document.getElementById("span0");
+								span.style.display = "inline";
+							}
+							if (assets[1].ti == "BEEStMoD") {
+								var span = document.getElementById("span1");
+								span.style.display = "inline";
+							}
+							if (assets[0].ti && assets[1].ti) {
+								var div = document.getElementById("p2");
+								div.style.display = "block";
+							}
 
-		var rows=[], logs=[];
-		for (var j = asset.st; j>=0; --j) {
-			var row = [{v: data[s][j][0]}];
-			for (var i=0; i < data.length; ++i) {
-				if (data[i]) {
-					row.push({v: data[i][j][1] / prices[i] - 1});
-					if (data[i][j][0] != data[s][j][0]) {
-						logs.push(asset.sy[s] + " " + data[s][j][0] + " " + asset.sy[i] + " " + data[i][j][0]);
+							prepData(index, true);
+						}
 					}
 				}
+				request.open("get", "query?function=" + asset.fu + "&symbol=" + asset.sy[symbol] + "&market=USD&outputsize=full&apikey=" + (params["apikey"] || btoa(Math.random()).slice(0, 16).toUpperCase()));
+				request.send();
 			}
-			rows.push({c: row});
-		}
-		if (logs.length > 0) console.error(logs);
 
-		drawChart(index, rows);
-
-		if (versus && assets[0].ti && assets[1].ti) {
-			assets[2].st = assets[0].st;
-			assets[2].en = assets[0].en;
-			assets[2].cols = [
-				{id:"date", label:" ", type:"string"},
-				{id:assets[0].ti, label:assets[0].ti, type:"number"},
-				{id:assets[1].ti, label:assets[1].ti, type:"number"}
-			]
-			document.title = assets[0].ti + " vs " + assets[1].ti;
-			title.innerHTML = assets[0].ti + " vs " + assets[1].ti;
-			prepVersus();
-		}
-	}
-
-	function prepArray(index, start) {
-		var asset = assets[index], data = asset.da, s = asset.s;
-		var shares=[];
-		for (var i = data.length-1; i>=0; --i) {
-			if (data[i]) {
-				shares[i] = 1 / data[i][start][1];
-			}
-		}
-
-		var array=[], logs=[];
-		for (var j = start; j>=0; --j) {
-			var sum=0;
-			for (var i=0; i < data.length; ++i) {
-				if (data[i]) {
-					sum += data[i][j][1] * shares[i];
-					if (data[i][j][0] != data[s][j][0]) {
-						logs.push(asset.sy[s] + " " + data[s][j][0] + " " + asset.sy[i] + " " + data[i][j][0]);
+			function prepData(index, versus) {
+				var asset = assets[index], data = asset.da, s = asset.s;
+				var prices = [];
+				for (var i = data.length - 1; i >= 0; --i) {
+					if (data[i]) {
+						prices[i] = data[i][asset.st][1];
 					}
 				}
-			}
-			array.push([data[s][j][0], sum/asset.n - 1]);
-		}
-		if (logs.length > 0) console.error(logs);
 
-		return array;
-	}
-
-	function prepVersus() {
-		var date = new Date(assets[0].da[assets[0].s][assets[2].st][0]);
-		var start = assets[1].en;
-		while (start > 0 && new Date(assets[1].da[assets[1].s][start][0]) < date) {
-			--start;
-		}
-
-		var array0 = prepArray(0, assets[2].st);
-		var array1 = prepArray(1, start);
-
-		var timeout=9999, i=0, j=0, rows=[], logs=[];
-		while (--timeout > 0 && i < array0.length && j < array1.length) {
-			if (array0[i][0] == array1[j][0]) {
-				rows.push({c: [{v:array0[i][0]}, {v:array0[i][1]}, {v:array1[j][1]}]});
-				++i, ++j;
-			}
-			else if (new Date(array0[i][0]) > new Date(array1[j][0])) {
-				++j;
-			}
-			else if (new Date(array0[i][0]) < new Date(array1[j][0])) {
-				++i;
-			}
-			else {
-				logs.push(array0[i][0] + " " + array1[j][0]);
-			}
-		}
-		if (logs.length > 0) console.error(logs);
-
-		drawChart(2, rows);
-	}
-
-	function drawChart(i, rows) {
-		var asset = assets[i];
-
-		if (!asset.ch) {
-			var div = document.getElementById("chart"+i);
-			div.tabIndex = 0;
-			asset.ch = new google.visualization.LineChart(div);
-
-			div.addEventListener("mouseenter", function(event) {
-				this.style.outline = "1px solid #eee";
-			})
-
-			div.addEventListener("mouseleave", function(event) {
-				this.style.outline = "none";
-			})
-
-			div.addEventListener("wheel", function(event) {
-				var dy = event.deltaY > 0 ? 1 : -1;
-				if (dy > 0 && asset.st > 0 || dy < 0 && asset.st < asset.en) {
-					asset.st -= dy;
-					i < 2 ? prepData(i) : prepVersus();
+				var rows = [], logs = [];
+				for (var j = asset.st; j >= 0; --j) {
+					var row = [{ v: data[s][j][0] }];
+					for (var i = 0; i < data.length; ++i) {
+						if (data[i]) {
+							row.push({ v: data[i][j][1] / prices[i] - 1 });
+							if (data[i][j][0] != data[s][j][0]) {
+								logs.push(asset.sy[s] + " " + data[s][j][0] + " " + asset.sy[i] + " " + data[i][j][0]);
+							}
+						}
+					}
+					rows.push({ c: row });
 				}
-				event.preventDefault();
-			})
+				if (logs.length > 0) console.error(logs);
 
-			div.addEventListener("keydown", function(event) {
-				if (event.key == "ArrowRight" && asset.st > 0) {
-					asset.st--;
-					i < 2 ? prepData(i) : prepVersus();
-				}
-				else if (event.key == "ArrowLeft" && asset.st < asset.en) {
-					asset.st++;
-					i < 2 ? prepData(i) : prepVersus();
-				}
-			})
-		}
+				drawChart(index, rows);
 
-		asset.ch.draw(new google.visualization.DataTable({cols:asset.cols, rows:rows}), {
-			chartArea:{left:62, top:10, width:"100%", height:"88%"},
-			vAxis:{format:"percent"},
-			legend:{position:"in"},
-			width:960,
-			height:540
+				if (versus && assets[0].ti && assets[1].ti) {
+					assets[2].st = assets[0].st;
+					assets[2].en = assets[0].en;
+					assets[2].cols = [
+						{ id: "date", label: " ", type: "string" },
+						{ id: assets[0].ti, label: assets[0].ti, type: "number" },
+						{ id: assets[1].ti, label: assets[1].ti, type: "number" }
+					]
+					document.title = assets[0].ti + " vs " + assets[1].ti;
+					title.innerHTML = assets[0].ti + " vs " + assets[1].ti;
+					prepVersus();
+				}
+			}
+
+			function prepArray(index, start) {
+				var asset = assets[index], data = asset.da, s = asset.s;
+				var shares = [];
+				for (var i = data.length - 1; i >= 0; --i) {
+					if (data[i]) {
+						shares[i] = 1 / data[i][start][1];
+					}
+				}
+
+				var array = [], logs = [];
+				for (var j = start; j >= 0; --j) {
+					var sum = 0;
+					for (var i = 0; i < data.length; ++i) {
+						if (data[i]) {
+							sum += data[i][j][1] * shares[i];
+							if (data[i][j][0] != data[s][j][0]) {
+								logs.push(asset.sy[s] + " " + data[s][j][0] + " " + asset.sy[i] + " " + data[i][j][0]);
+							}
+						}
+					}
+					array.push([data[s][j][0], sum / asset.n - 1]);
+				}
+				if (logs.length > 0) console.error(logs);
+
+				return array;
+			}
+
+			function prepVersus() {
+				var date = new Date(assets[0].da[assets[0].s][assets[2].st][0]);
+				var start = assets[1].en;
+				while (start > 0 && new Date(assets[1].da[assets[1].s][start][0]) < date) {
+					--start;
+				}
+
+				var array0 = prepArray(0, assets[2].st);
+				var array1 = prepArray(1, start);
+
+				var timeout = 9999, i = 0, j = 0, rows = [], logs = [];
+				while (--timeout > 0 && i < array0.length && j < array1.length) {
+					if (array0[i][0] == array1[j][0]) {
+						rows.push({ c: [{ v: array0[i][0] }, { v: array0[i][1] }, { v: array1[j][1] }] });
+						++i, ++j;
+					}
+					else if (new Date(array0[i][0]) > new Date(array1[j][0])) {
+						++j;
+					}
+					else if (new Date(array0[i][0]) < new Date(array1[j][0])) {
+						++i;
+					}
+					else {
+						logs.push(array0[i][0] + " " + array1[j][0]);
+					}
+				}
+				if (logs.length > 0) console.error(logs);
+
+				drawChart(2, rows);
+			}
+
+			function drawChart(i, rows) {
+				var asset = assets[i];
+
+				if (!asset.ch) {
+					var div = document.getElementById("chart" + i);
+					div.tabIndex = 0;
+					asset.ch = new google.visualization.LineChart(div);
+
+					div.addEventListener("mouseenter", function (event) {
+						this.style.outline = "1px solid #eee";
+					})
+
+					div.addEventListener("mouseleave", function (event) {
+						this.style.outline = "none";
+					})
+
+					div.addEventListener("wheel", function (event) {
+						var dy = event.deltaY > 0 ? 1 : -1;
+						if (dy > 0 && asset.st > 0 || dy < 0 && asset.st < asset.en) {
+							asset.st -= dy;
+							i < 2 ? prepData(i) : prepVersus();
+						}
+						event.preventDefault();
+					})
+
+					div.addEventListener("keydown", function (event) {
+						if (event.key == "ArrowRight" && asset.st > 0) {
+							asset.st--;
+							i < 2 ? prepData(i) : prepVersus();
+						}
+						else if (event.key == "ArrowLeft" && asset.st < asset.en) {
+							asset.st++;
+							i < 2 ? prepData(i) : prepVersus();
+						}
+					})
+				}
+
+				asset.ch.draw(new google.visualization.DataTable({ cols: asset.cols, rows: rows }), {
+					chartArea: { left: 62, top: 10, width: "100%", height: "88%" },
+					vAxis: { format: "percent" },
+					legend: { position: "in" },
+					width: 960,
+					height: 540
+				})
+			}
 		})
-	}
-})
-</script>
+	</script>
 </body>
+
 </html>
