@@ -1,20 +1,17 @@
-// Shuichi Aizawa 2018 github.com/shu1
+// Shuichi Aizawa shu1.dev 2026
 "use strict";
 
 var https = require("https");
 var express = require("express");
 var app = express();
 var sqlite3 = require("sqlite3").verbose();
-var db = new sqlite3.Database("./.data/sqlite.db");
+var db = new sqlite3.Database("sqlite.db");
 
 db.run("CREATE TABLE alphavantage(datetime TEXT NOT NULL, function TEXT NOT NULL, symbol TEXT NOT NULL, data TEXT NOT NULL, PRIMARY KEY(function, symbol))", function (err) {
 	if (err) {
 		console.log(err);
 	} else {
 		console.warn("table created");
-		init("TIME_SERIES_DAILY_ADJUSTED", ["META", "AAPL", "AMZN", "NFLX", "GOOG"]);
-		setTimeout(init, 65000, "DIGITAL_CURRENCY_DAILY", ["BTC", "BCH", "ETH", "EOS", "XLM"]);
-		setTimeout(init, 130000, "DIGITAL_CURRENCY_DAILY", ["XMR", "DASH", "LTC", "XRP", "ETC"]);
 	}
 })
 
@@ -29,12 +26,12 @@ app.get("/get", function (req, res) {
 })
 
 function get(f, s, res) {
-	https.get("https://www.alphavantage.co/query?function=" + f + "&symbol=" + s + "&market=USD&outputsize=full&apikey=" + process.env.apikey, function (response) {
+	https.get("https://api.massive.com/v2/aggs/ticker/" + (f == "DIGITAL_CURRENCY_DAILY" ? "X:" + s + "USD" : s) + "/range/1/day/2000-01-01/" + new Date().toISOString().slice(0, 10) + "?apiKey=" + process.env.apiKey, function (response) {
 		var data = "";
 		response.on("data", function (chunk) { data += chunk });
 		response.on("end", function () {
 			var parsed = JSON.parse(data);
-			if (parsed["Meta Data"]) {
+			if (parsed.results) {
 				console.log(s, "insert");
 				db.run("INSERT OR REPLACE INTO alphavantage(datetime, function, symbol, data) VALUES(datetime('now'), ?, ?, ?)", [f, s, data], function (err) {
 					err && console.error(err);
@@ -49,7 +46,7 @@ function get(f, s, res) {
 
 app.get("/", function (req, res) {
 	if (!Object.keys(req.query).length) {
-		res.redirect("/?stocks=META,AAPL,AMZN,NFLX,GOOG&crypto=BTC,BCH,ETH,EOS,XLM,XMR,DASH&date=2018-08-13");
+		res.redirect("/?stocks=NVDA,AAPL,GOOG&crypto=BTC,ETH&date=2018-08-13");
 	} else {
 		res.sendFile(__dirname + "/index.html");
 	}
