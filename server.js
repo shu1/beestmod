@@ -5,7 +5,7 @@ var https = require("https");
 var express = require("express");
 var app = express();
 var { Pool } = require("pg");
-var pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: true });
+var pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
 
 pool.query("CREATE TABLE alphavantage(datetime TIMESTAMPTZ NOT NULL, function TEXT NOT NULL, symbol TEXT NOT NULL, data TEXT NOT NULL, PRIMARY KEY(function, symbol))", function (err, result) {
 	if (err) {
