@@ -4,13 +4,13 @@
 	"description": "FAANG vs BEEStMoD",
 	"main": "server.js",
 	"scripts": {
-		"start": "node server.js"
+		"start": "node --env-file=.env server.js"
 	},
 	"dependencies": {
-		"express": "^4.17.1",
+		"express": "^4.22.2",
 		"pg": "^7.6.1"
 	},
 	"engines": {
-		"node": "12.x"
+		"node": ">=20"
 	}
 }

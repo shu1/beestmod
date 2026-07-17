@@ -1,4 +1,4 @@
-<!-- Shuichi Aizawa 2018 github.com/shu1 -->
+<!-- Shuichi Aizawa shu1.dev 2026 -->
 <!doctype html>
 <html>
 
@@ -26,8 +26,8 @@
 		</p>
 		<center id="loading">Loading Charts...</center>
 		<div id="charts" style="display:none">
-			<p id="p0" style="display:none"><b>Stocks:</b><span id="span0" style="display:none"> <b>MAANG</b> is Meta,
-					Apple, Amazon, Netflix, and Google</span></p>
+			<p id="p0" style="display:none"><b>Stocks:</b><span id="span0" style="display:none"> <b>FAANG</b> is
+					Facebook, Apple, Amazon, Netflix, and Google</span></p>
 			<div id="chart0"></div>
 			<p id="p1" style="display:none"><b>Crypto:</b><span id="span1" style="display:none"> <b>BEEStMoD</b> is
 					Bitcoin, Bitcoin Cash, Ethereum, EOS, Stellar, Monero, and Dash</span></p>
@@ -38,7 +38,7 @@
 		<p>Use your mouse <b>scroll wheel</b> to move the start dates of each chart, or click on a chart and then tap
 			your left/right <b>arrow keys</b>.<br>
 			Look up your own stocks and crypto by changing the <b>url parameters</b>.</p>
-		<div>Developed by <a href="https://github.com/shu1" target="_blank">Shuichi Aizawa</a>. Inspired by <a
+		<div>Developed by <a href="https://shu1.dev" target="_blank">Shuichi Aizawa</a>. Inspired by <a
 				href="https://medium.com/@omid.malekan/its-time-to-start-selling-your-faang-stocks-and-investing-in-beestmod-9cc0eb8a48ef"
 				target="_blank">Omid Malekan</a>.</div>
 	</div>
@@ -49,15 +49,9 @@
 		google.charts.setOnLoadCallback(function () {
 			var ranges = [];
 			var assets = [{
-				sy: ["META", "AAPL", "AMZN", "NFLX", "GOOG"],
-				fu: "TIME_SERIES_DAILY_ADJUSTED",
-				k1: "Time Series (Daily)",
-				k2: "5. adjusted close"
+				sy: ["NVDA", "AAPL", "GOOG"]
 			}, {
-				sy: ["BTC", "BCH", "ETH", "EOS", "XLM", "XMR", "DASH"],
-				fu: "DIGITAL_CURRENCY_DAILY",
-				k1: "Time Series (Digital Currency Daily)",
-				k2: "4b. close (USD)"
+				sy: ["BTC", "ETH"]
 			}, {}]
 
 			var startDate, params = {}, urlParams = location.search.slice(1).split("&");
@@ -92,14 +86,14 @@
 				var asset = assets[index], request = new XMLHttpRequest();
 				request.onload = function () {
 					var prevDate, data = [], hi = 0, lo = 999999;
-					var series = JSON.parse(this.response)[asset.k1];
-					if (series) {
+					var res = JSON.parse(this.response).results;
+					if (res) {
 						asset.n++;
-						for (var i in series) {
-							var date = new Date(i);
+						for (var i = res.length - 1; i >= 0; --i) {
+							var date = new Date(res[i].t);
 							if (startDate && startDate > date) break;
-							var price = parseFloat(series[i][asset.k2]);
-							data.push([i, price]);
+							var price = parseFloat(res[i].c);
+							data.push([date.toISOString().slice(0, 10), price]);
 							if (price > hi) hi = price;
 							if (price < lo) lo = price;
 							prevDate = date;
@@ -145,7 +139,7 @@
 
 							var div = document.getElementById("p" + index);
 							div.style.display = "block";
-							if (assets[0].ti == "MAANG") {
+							if (assets[0].ti == "FAANG") {
 								var span = document.getElementById("span0");
 								span.style.display = "inline";
 							}
