@@ -12,6 +12,8 @@ pool.query("CREATE TABLE alphavantage(datetime TIMESTAMPTZ NOT NULL, function TE
 		console.log(err);
 	} else {
 		console.warn("table created");
+		init("TIME_SERIES_DAILY_ADJUSTED", ["NVDA", "AAPL", "GOOG"]);
+		init("DIGITAL_CURRENCY_DAILY", ["BTC", "ETH"]);
 	}
 })
 

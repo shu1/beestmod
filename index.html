@@ -49,9 +49,11 @@
 		google.charts.setOnLoadCallback(function () {
 			var ranges = [];
 			var assets = [{
-				sy: ["NVDA", "AAPL", "GOOG"]
+				sy: ["NVDA", "AAPL", "GOOG"],
+				fu: "TIME_SERIES_DAILY_ADJUSTED"
 			}, {
-				sy: ["BTC", "ETH"]
+				sy: ["BTC", "ETH"],
+				fu: "DIGITAL_CURRENCY_DAILY"
 			}, {}]
 
 			var startDate, params = {}, urlParams = location.search.slice(1).split("&");
