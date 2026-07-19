@@ -158,7 +158,7 @@
 						}
 					}
 				}
-				request.open("get", "https://api.massive.com/v2/aggs/ticker/" + (index ? "X:" + asset.sy[symbol] + "USD" : asset.sy[symbol]) + "/range/1/day/2000-01-01/" + new Date().toISOString().slice(0, 10) + "?apiKey=" + params["apiKey"]);
+				request.open("get", "https://api.massive.com/v2/aggs/ticker/" + (asset.fu == "DIGITAL_CURRENCY_DAILY" ? "X:" + asset.sy[symbol] + "USD" : asset.sy[symbol]) + "/range/1/day/2000-01-01/" + new Date().toISOString().slice(0, 10) + "?apiKey=" + params["apiKey"]);
 				request.send();
 			}
 
