@@ -32,9 +32,9 @@ function get(f, s, res) {
 		var data = "";
 		response.on("data", function (chunk) { data += chunk });
 		response.on("end", function () {
-			var parsed = JSON.parse(data);
-			if (parsed.results) {
-				console.log(s, "insert");
+			var results = JSON.parse(data).results;
+			if (results) {
+				console.log(s, "insert", new Date(results[results.length - 1].t).toISOString().slice(0, 10));
 				db.run("INSERT OR REPLACE INTO alphavantage(datetime, function, symbol, data) VALUES(datetime('now'), ?, ?, ?)", [f, s, data], function (err) {
 					err && console.error(err);
 				})
