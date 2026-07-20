@@ -93,16 +93,16 @@ app.get("/cron", function (req, res) {
 	if (req.query.h && req.query.m) {
 		date.setHours(req.query.h, req.query.m, 0);
 	}
-	cron(req.query.f == "c" ? "DIGITAL_CURRENCY_DAILY" : "TIME_SERIES_DAILY_ADJUSTED", date.toISOString(), 10000000, res);
+	cron("TIME_SERIES_DAILY_ADJUSTED", date.toISOString(), 10000000, res);
 })
 
 function cron(f, time, prev, res) {
-	console.log("cron", f, prev);
 	db.all("SELECT function, symbol FROM alphavantage WHERE function=? AND datetime(datetime) < datetime(?) ORDER BY datetime", [f, time], function (err, rows) {
 		if (err) {
 			console.error(err);
 			res && res.status(500).send(err);
 		} else {
+			console.log("cron", f, rows.length);
 			for (var i = 0; i < 5 && i < rows.length; ++i) {
 				get(rows[i].function, rows[i].symbol);
 			}
@@ -110,6 +110,9 @@ function cron(f, time, prev, res) {
 
 			if (rows.length > 5 && rows.length < prev) {
 				setTimeout(cron, 65000, f, time, rows.length);
+			}
+			else if (f == "TIME_SERIES_DAILY_ADJUSTED") {
+				setTimeout(cron, 65000, "DIGITAL_CURRENCY_DAILY", time, 10000000);
 			}
 		}
 	})
