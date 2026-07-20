@@ -32,9 +32,9 @@ function get(f, s, res) {
 		var data = "";
 		response.on("data", function (chunk) { data += chunk });
 		response.on("end", function () {
-			var parsed = JSON.parse(data);
-			if (parsed.results) {
-				console.log(s, "insert");
+			var results = JSON.parse(data).results;
+			if (results) {
+				console.log(s, "insert", new Date(results[results.length - 1].t).toISOString().slice(0, 10));
 				pool.query("INSERT INTO alphavantage(datetime, function, symbol, data) VALUES(NOW(), $1, $2, $3) ON CONFLICT(function, symbol) DO UPDATE SET datetime = NOW(), data = $3", [f, s, data], function (err, result) {
 					err && console.error(err);
 				})
@@ -93,16 +93,16 @@ app.get("/cron", function (req, res) {
 	if (req.query.h && req.query.m) {
 		date.setHours(req.query.h, req.query.m, 0);
 	}
-	cron(req.query.f == "c" ? "DIGITAL_CURRENCY_DAILY" : "TIME_SERIES_DAILY_ADJUSTED", date.toISOString(), 10000000, res);
+	cron("TIME_SERIES_DAILY_ADJUSTED", date.toISOString(), 10000000, res);
 })
 
 function cron(f, time, prev, res) {
-	console.log("cron", f, prev);
 	pool.query("SELECT function, symbol FROM alphavantage WHERE function=$1 AND datetime<$2 ORDER BY datetime", [f, time], function (err, result) {
 		if (err) {
 			console.error(err);
 			res && res.status(500).send(err);
 		} else {
+			console.log("cron", f, result.rowCount);
 			for (var i = 0; i < 5 && i < result.rowCount; ++i) {
 				get(result.rows[i].function, result.rows[i].symbol);
 			}
@@ -110,6 +110,9 @@ function cron(f, time, prev, res) {
 
 			if (result.rowCount > 5 && result.rowCount < prev) {
 				setTimeout(cron, 65000, f, time, result.rowCount);
+			}
+			else if (f == "TIME_SERIES_DAILY_ADJUSTED") {
+				setTimeout(cron, 65000, "DIGITAL_CURRENCY_DAILY", time, 10000000);
 			}
 		}
 	})
